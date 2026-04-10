@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\KendaraanController;
+use App\Http\Controllers\TarifController;
+use App\Http\Controllers\AreaController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -36,7 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('tarif', App\Http\Controllers\TarifController::class)->except(['show', 'create', 'edit']);
 
     // Area Parkir
-    Route::resource('area', App\Http\Controllers\AreaParkirController::class);
+   Route::resource('area', AreaController::class);
 
     // Kendaraan
  Route::prefix('kendaraan')->name('kendaraan.')->group(function () {

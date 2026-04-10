@@ -34,7 +34,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name'     => 'required|string|max:100',
-            'email'    => 'required|email|max:100|unique:user,email',
+            'email'    => 'required|email|max:100|unique:users,email',
             'password' => 'required|string|confirmed',
             'role'     => 'required|in:admin,petugas,user',
             'status'   => 'required|in:aktif,nonaktif',
@@ -76,14 +76,13 @@ class UserController extends Controller
         $request->validate([
             'name'     => 'required|string|max:100',
             'email'    => ['required', 'email', 'max:100', Rule::unique('user', 'email')->ignore($user->id_user, 'id_user')],
-           'password' => 'required|string|confirmed',
+           'password' => 'nullable|string|confirmed',
             'role'     => 'required|in:admin,petugas,user',
             'status'   => 'required|in:aktif,nonaktif',
         ], [
             'name.required'      => 'Nama wajib diisi.',
             'email.required'     => 'Email wajib diisi.',
             'email.unique'       => 'Email sudah digunakan.',
-            'password' => 'required|string|confirmed',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'role.required'      => 'Role wajib dipilih.',
             'status.required'    => 'Status wajib dipilih.',
