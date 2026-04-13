@@ -48,7 +48,7 @@
                         <option value="">-- Semua Role --</option>
                         <option value="admin"   {{ request('role') === 'admin'   ? 'selected' : '' }}>Admin</option>
                         <option value="petugas" {{ request('role') === 'petugas' ? 'selected' : '' }}>Petugas</option>
-                        <option value="user"    {{ request('role') === 'user'    ? 'selected' : '' }}>User</option>
+                        <option value="owner"   {{ request('role') === 'owner'   ? 'selected' : '' }}>Owner</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -71,341 +71,435 @@
         </div>
     </div>
 
-    {{-- Table --}}
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
+    {{-- ================= DATA ADMIN ================= --}}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Data Admin</h6>
+                <button onclick="printTable('printAdmin', 'Data Admin')" class="btn btn-success btn-sm">
+                    <i class="bi bi-printer me-1"></i> Print
+                </button>
+            </div>
+            <div id="adminTable" class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-3" style="width:50px">#</th>
-                            <th>Nama</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Dibuat</th>
-                            <th class="text-center pe-3" style="width:150px">Aksi</th>
+                            <th>#</th><th>Nama</th><th>Email</th><th>Status</th><th>Dibuat</th>
+                            <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($users as $index => $user)
+                        @php $no = 1; @endphp
+                        @forelse($users->where('role','admin') as $user)
                         <tr>
-                            <td class="ps-3 text-muted">{{ $users->firstItem() + $index }}</td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-{{ $user->role_badge }} bg-opacity-10"
-                                         style="width:38px;height:38px;min-width:38px;">
-                                        <span class="fw-bold text-{{ $user->role_badge }}" style="font-size:14px;">
-                                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <div class="fw-semibold">{{ $user->name }}</div>
-                                        <small class="text-muted">ID: {{ $user->id_user }}</small>
-                                    </div>
-                                </div>
-                            </td>
+                            <td>{{ $no++ }}</td>
+                            <td>{{ $user->name }}</td>
                             <td>{{ $user->email }}</td>
-                            <td>
-                                <span class="badge px-2 py-1
-                                    @if($user->role === 'admin') bg-danger
-                                    @elseif($user->role === 'petugas') bg-warning text-dark
-                                    @else bg-primary
-                                    @endif">
-                                    {{ ucfirst($user->role) }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge px-2 py-1 {{ $user->status === 'aktif' ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ ucfirst($user->status) }}
-                                </span>
-                            </td>
-                            <td class="text-muted small">
-                                {{ \Carbon\Carbon::parse($user->created_at)->format('d M Y') }}
-                            </td>
-                            <td class="text-center pe-3">
-                                <div class="d-flex gap-1 justify-content-center">
-                                    {{-- Toggle Status --}}
-                                    <form action="{{ route('user.toggle-status', $user->id_user) }}" method="POST">
-                                        @csrf @method('PATCH')
-                                        <button type="submit"
-                                            class="btn btn-sm {{ $user->status === 'aktif' ? 'btn-outline-warning' : 'btn-outline-success' }}"
-                                            title="{{ $user->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}">
-                                            <i class="bi {{ $user->status === 'aktif' ? 'bi-toggle-on' : 'bi-toggle-off' }}"></i>
-                                        </button>
-                                    </form>
-
-                                    {{-- Tombol Edit (buka modal) --}}
-                                    <button type="button" class="btn btn-sm btn-outline-primary"
-                                        title="Edit"
-                                        onclick="bukaModalEdit(
-                                            {{ $user->id_user }},
-                                            '{{ addslashes($user->name) }}',
-                                            '{{ $user->email }}',
-                                            '{{ $user->role }}',
-                                            '{{ $user->status }}'
-                                        )">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-
-                                    {{-- Tombol Hapus (buka modal) --}}
-                                    @if($user->id_user !== auth()->id())
-                                    <button type="button" class="btn btn-sm btn-outline-danger"
-                                        title="Hapus"
-                                        onclick="bukaModalHapus({{ $user->id_user }}, '{{ addslashes($user->name) }}')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                    @endif
-                                </div>
+                            <td><span class="badge bg-success">{{ ucfirst($user->status) }}</span></td>
+                            <td>{{ $user->created_at->format('d M Y') }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-primary" title="Edit"
+                                    onclick="bukaModalEdit({{ $user->id_user }},'{{ addslashes($user->name) }}','{{ $user->email }}','{{ $user->role }}','{{ $user->status }}','')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Hapus"
+                                    onclick="bukaModalHapus({{ $user->id_user }},'{{ addslashes($user->name) }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </td>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="bi bi-people fs-1 d-block mb-2 opacity-25"></i>
-                                Tidak ada data user ditemukan.
-                            </td>
-                        </tr>
+                        <tr><td colspan="6" class="text-center text-muted py-3">Tidak ada data admin</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
-
-        @if($users->hasPages())
-        <div class="card-footer bg-white d-flex align-items-center justify-content-between py-3">
-            <small class="text-muted">
-                Menampilkan {{ $user->firstItem() }}–{{ $user->lastItem() }} dari {{ $user->total() }} user
-            </small>
-            {{ $user->links('pagination::bootstrap-5') }}
-        </div>
-        @endif
     </div>
-</div>
 
-
-{{-- ===================== MODAL TAMBAH USER ===================== --}}
-<div class="modal fade" id="modalTambah" tabindex="-1" aria-labelledby="labelTambah" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form action="{{ route('user.store') }}" method="POST" autocomplete="off">
-                @csrf
-                <div class="modal-header">
-                    <input type="hidden" name="_from_modal" value="tambah"> 
-                    <h5 class="modal-title fw-bold" id="labelTambah">
-                        <i class="bi bi-person-plus me-2 text-primary"></i>Tambah User
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    {{-- Nama --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                            value="{{ old('name') }}" placeholder="Masukkan nama lengkap">
-                        @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                    {{-- Email --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
-                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                            value="{{ old('email') }}" placeholder="contoh@email.com">
-                        @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                    {{-- Password --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <input type="password" name="password" id="tambah_password"
-                                class="form-control @error('password') is-invalid @enderror"
-                                placeholder="Masukkan password">
-                            <button class="btn btn-outline-secondary" type="button"
-                                onclick="togglePwd('tambah_password', this)">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-                    {{-- Konfirmasi Password --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Konfirmasi Password <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <input type="password" name="password_confirmation" id="tambah_password_confirm"
-                                class="form-control" placeholder="Ulangi password">
-                            <button class="btn btn-outline-secondary" type="button"
-                                onclick="togglePwd('tambah_password_confirm', this)">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    {{-- Role & Status --}}
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <label class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
-                            <select name="role" class="form-select @error('role') is-invalid @enderror">
-                                <option value="" disabled selected>-- Pilih --</option>
-                                <option value="admin"   {{ old('role') === 'admin'   ? 'selected' : '' }}>Admin</option>
-                                <option value="petugas" {{ old('role') === 'petugas' ? 'selected' : '' }}>Petugas</option>
-                                <option value="user"    {{ old('role') === 'user'    ? 'selected' : '' }}>User</option>
-                            </select>
-                            @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
-                            <select name="status" class="form-select @error('status') is-invalid @enderror">
-                                <option value="" disabled selected>-- Pilih --</option>
-                                <option value="aktif"    {{ old('status') === 'aktif'    ? 'selected' : '' }}>Aktif</option>
-                                <option value="nonaktif" {{ old('status') === 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
-                            </select>
-                            @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i> Simpan
-                    </button>
-                </div>
-            </form>
+    {{-- ================= DATA PETUGAS ================= --}}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Data Petugas</h6>
+                 <button onclick="printTable('printPetugas', 'Data Petugas')" class="btn btn-success btn-sm">
+                    <i class="bi bi-printer me-1"></i> Print
+                </button>
+            </div>
+            <div id="petugasTable" class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th><th>Nama</th><th>Email</th><th>Shift</th>
+                            <th>Status</th><th>Dibuat</th><th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $no  = 1;
+                            $jam = now()->hour;
+                        @endphp
+                        @forelse($users->where('role','petugas') as $user)
+                        <tr>
+                            <td>{{ $no++ }}</td>
+                            <td>{{ $user->name }}</td>
+                            <td>{{ $user->email }}</td>
+                            <td>
+                                @php
+                                    $isOn = match($user->shift) {
+                                        'pagi'  => $jam >= 6  && $jam < 14,
+                                        'siang' => $jam >= 14 && $jam < 22,
+                                        'malam' => $jam >= 22 || $jam < 6,
+                                        default => false,
+                                    };
+                                    $shiftColor = match($user->shift) {
+                                        'pagi'  => 'warning',
+                                        'siang' => 'info',
+                                        'malam' => 'dark',
+                                        default => 'secondary',
+                                    };
+                                @endphp
+                                <span class="badge bg-{{ $shiftColor }}">
+                                    {{ $user->shift ? ucfirst($user->shift) : '-' }}
+                                </span>
+                                <span class="badge bg-{{ $isOn ? 'success' : 'secondary' }}">
+                                    {{ $isOn ? 'ON' : 'OFF' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ $user->status === 'aktif' ? 'success' : 'danger' }}">
+                                    {{ ucfirst($user->status) }}
+                                </span>
+                            </td>
+                            <td>{{ $user->created_at->format('d M Y') }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-primary" title="Edit"
+                                    onclick="bukaModalEdit({{ $user->id_user }},'{{ addslashes($user->name) }}','{{ $user->email }}','{{ $user->role }}','{{ $user->status }}','{{ $user->shift }}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Hapus"
+                                    onclick="bukaModalHapus({{ $user->id_user }},'{{ addslashes($user->name) }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="7" class="text-center text-muted py-3">Tidak ada data petugas</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-
-{{-- ===================== MODAL EDIT USER ===================== --}}
-<div class="modal fade" id="modalEdit" tabindex="-1" aria-labelledby="labelEdit" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form id="formEdit" method="POST" autocomplete="off">
-                @csrf
-                @method('PUT')
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="labelEdit">
-                        <i class="bi bi-pencil-square me-2 text-warning"></i>Edit User
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    {{-- Nama --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
-                        <input type="text" name="name" id="edit_name" class="form-control"
-                            placeholder="Masukkan nama lengkap" required>
-                    </div>
-                    {{-- Email --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
-                        <input type="email" name="email" id="edit_email" class="form-control"
-                            placeholder="contoh@email.com" required>
-                    </div>
-                    {{-- Password --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            Password Baru
-                            <span class="text-muted fw-normal small">(kosongkan jika tidak diubah)</span>
-                        </label>
-                        <div class="input-group">
-                            <input type="password" name="password" id="edit_password"
-                                class="form-control" placeholder="Masukkan password baru">
-                            <button class="btn btn-outline-secondary" type="button"
-                                onclick="togglePwd('edit_password', this)">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    {{-- Konfirmasi Password --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Konfirmasi Password Baru</label>
-                        <div class="input-group">
-                            <input type="password" name="password_confirmation" id="edit_password_confirm"
-                                class="form-control" placeholder="Ulangi password baru">
-                            <button class="btn btn-outline-secondary" type="button"
-                                onclick="togglePwd('edit_password_confirm', this)">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    {{-- Role & Status --}}
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <label class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
-                            <select name="role" id="edit_role" class="form-select" required>
-                                <option value="admin">Admin</option>
-                                <option value="petugas">Petugas</option>
-                                <option value="user">User</option>
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
-                            <select name="status" id="edit_status" class="form-select" required>
-                                <option value="aktif">Aktif</option>
-                                <option value="nonaktif">Nonaktif</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-warning">
-                        <i class="bi bi-save me-1"></i> Update
-                    </button>
-                </div>
-            </form>
+    {{-- ================= DATA OWNER ================= --}}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Data Owner</h6>
+                <button onclick="printTable('printOwner', 'Data Owner')" class="btn btn-success btn-sm">
+                    <i class="bi bi-printer me-1"></i> Print
+                </button>
+            </div>
+            <div id="ownerTable" class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th><th>Nama</th><th>Email</th><th>Status</th><th>Dibuat</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $no = 1; @endphp
+                        @forelse($users->where('role','owner') as $user)
+                        <tr>
+                            <td>{{ $no++ }}</td>
+                            <td>{{ $user->name }}</td>
+                            <td>{{ $user->email }}</td>
+                            <td><span class="badge bg-success">{{ ucfirst($user->status) }}</span></td>
+                            <td>{{ $user->created_at->format('d M Y') }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-primary" title="Edit"
+                                    onclick="bukaModalEdit({{ $user->id_user }},'{{ addslashes($user->name) }}','{{ $user->email }}','{{ $user->role }}','{{ $user->status }}','')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Hapus"
+                                    onclick="bukaModalHapus({{ $user->id_user }},'{{ addslashes($user->name) }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="6" class="text-center text-muted py-3">Tidak ada data owner</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
 
-{{-- ===================== MODAL HAPUS USER ===================== --}}
-<div class="modal fade" id="modalHapus" tabindex="-1" aria-labelledby="labelHapus" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form id="formHapus" method="POST">
-                @csrf
-                @method('DELETE')
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold" id="labelHapus">Konfirmasi Hapus</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center py-4">
-                    <div class="text-danger mb-3">
-                        <i class="bi bi-exclamation-triangle-fill" style="font-size:3rem;"></i>
+    {{-- ===================== MODAL TAMBAH USER ===================== --}}
+    <div class="modal fade" id="modalTambah" tabindex="-1" aria-labelledby="labelTambah" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ route('user.store') }}" method="POST" autocomplete="off">
+                    @csrf
+                    <input type="hidden" name="_from_modal" value="tambah">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold" id="labelTambah">
+                            <i class="bi bi-person-plus me-2 text-primary"></i>Tambah User
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <p class="mb-1">Apakah Anda yakin ingin menghapus user:</p>
-                    <p class="fw-bold fs-5" id="hapusNamaUser"></p>
-                    <small class="text-muted">Tindakan ini tidak dapat dibatalkan.</small>
-                </div>
-                <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
-                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger px-4">
-                        <i class="bi bi-trash me-1"></i> Ya, Hapus
-                    </button>
-                </div>
-            </form>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
+                                value="{{ old('name') }}" placeholder="Masukkan nama lengkap">
+                            @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                                value="{{ old('email') }}" placeholder="contoh@email.com">
+                            @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" name="password" id="tambah_password"
+                                    class="form-control @error('password') is-invalid @enderror"
+                                    placeholder="Masukkan password">
+                                <button class="btn btn-outline-secondary" type="button"
+                                    onclick="togglePwd('tambah_password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Konfirmasi Password <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" name="password_confirmation" id="tambah_password_confirm"
+                                    class="form-control" placeholder="Ulangi password">
+                                <button class="btn btn-outline-secondary" type="button"
+                                    onclick="togglePwd('tambah_password_confirm', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
+                                <select name="role" id="roleTambah" class="form-select @error('role') is-invalid @enderror">
+                                    <option value="" disabled selected>-- Pilih --</option>
+                                    <option value="admin"   {{ old('role') === 'admin'   ? 'selected' : '' }}>Admin</option>
+                                    <option value="petugas" {{ old('role') === 'petugas' ? 'selected' : '' }}>Petugas</option>
+                                    <option value="owner"   {{ old('role') === 'owner'   ? 'selected' : '' }}>Owner</option>
+                                </select>
+                                @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                                <select name="status" class="form-select @error('status') is-invalid @enderror">
+                                    <option value="" disabled selected>-- Pilih --</option>
+                                    <option value="aktif"    {{ old('status') === 'aktif'    ? 'selected' : '' }}>Aktif</option>
+                                    <option value="nonaktif" {{ old('status') === 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                                </select>
+                                @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            {{-- Shift: muncul hanya saat role = petugas --}}
+                            <div class="col-6 d-none" id="fieldShift">
+                                <label class="form-label fw-semibold">Shift <span class="text-danger">*</span></label>
+                                <select name="shift" class="form-select @error('shift') is-invalid @enderror">
+                                    <option value="">-- Pilih Shift --</option>
+                                    <option value="pagi"  {{ old('shift') === 'pagi'  ? 'selected' : '' }}>Pagi</option>
+                                    <option value="siang" {{ old('shift') === 'siang' ? 'selected' : '' }}>Siang</option>
+                                    <option value="malam" {{ old('shift') === 'malam' ? 'selected' : '' }}>Malam</option>
+                                </select>
+                                @error('shift') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i> Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+
+
+    {{-- ===================== MODAL EDIT USER ===================== --}}
+    <div class="modal fade" id="modalEdit" tabindex="-1" aria-labelledby="labelEdit" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="formEdit" method="POST" autocomplete="off">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold" id="labelEdit">
+                            <i class="bi bi-pencil-square me-2 text-warning"></i>Edit User
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="edit_name" class="form-control"
+                                placeholder="Masukkan nama lengkap" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                            <input type="email" name="email" id="edit_email" class="form-control"
+                                placeholder="contoh@email.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Password Baru
+                                <span class="text-muted fw-normal small">(kosongkan jika tidak diubah)</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="password" name="password" id="edit_password"
+                                    class="form-control" placeholder="Masukkan password baru">
+                                <button class="btn btn-outline-secondary" type="button"
+                                    onclick="togglePwd('edit_password', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Konfirmasi Password Baru</label>
+                            <div class="input-group">
+                                <input type="password" name="password_confirmation" id="edit_password_confirm"
+                                    class="form-control" placeholder="Ulangi password baru">
+                                <button class="btn btn-outline-secondary" type="button"
+                                    onclick="togglePwd('edit_password_confirm', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
+                                <select name="role" id="edit_role" class="form-select" required>
+                                    <option value="admin">Admin</option>
+                                    <option value="petugas">Petugas</option>
+                                    <option value="owner">Owner</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                                <select name="status" id="edit_status" class="form-select" required>
+                                    <option value="aktif">Aktif</option>
+                                    <option value="nonaktif">Nonaktif</option>
+                                </select>
+                            </div>
+                            {{-- Shift edit: muncul hanya saat role = petugas --}}
+                            <div class="col-6 d-none" id="fieldShiftEdit">
+                                <label class="form-label fw-semibold">Shift <span class="text-danger">*</span></label>
+                                <select name="shift" id="edit_shift" class="form-select">
+                                    <option value="">-- Pilih Shift --</option>
+                                    <option value="pagi">Pagi</option>
+                                    <option value="siang">Siang</option>
+                                    <option value="malam">Malam</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-save me-1"></i> Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    {{-- ===================== MODAL HAPUS USER ===================== --}}
+    <div class="modal fade" id="modalHapus" tabindex="-1" aria-labelledby="labelHapus" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="formHapus" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold" id="labelHapus">Konfirmasi Hapus</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div class="text-danger mb-3">
+                            <i class="bi bi-exclamation-triangle-fill" style="font-size:3rem;"></i>
+                        </div>
+                        <p class="mb-1">Apakah Anda yakin ingin menghapus user:</p>
+                        <p class="fw-bold fs-5" id="hapusNamaUser"></p>
+                        <small class="text-muted">Tindakan ini tidak dapat dibatalkan.</small>
+                    </div>
+                    <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger px-4">
+                            <i class="bi bi-trash me-1"></i> Ya, Hapus
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @push('scripts')
 <script>
-    function bukaModalEdit(id, nama, email, role, status) {
-        document.getElementById('formEdit').action = '/user/' + id;
-        document.getElementById('edit_name').value   = nama;
-        document.getElementById('edit_email').value  = email;
-        document.getElementById('edit_role').value   = role;
-        document.getElementById('edit_status').value = status;
-        document.getElementById('edit_password').value = '';
+    // ── Modal Edit ──────────────────────────────────────────────
+    function bukaModalEdit(id, nama, email, role, status, shift) {
+        document.getElementById('formEdit').action             = '/user/' + id;
+        document.getElementById('edit_name').value             = nama;
+        document.getElementById('edit_email').value            = email;
+        document.getElementById('edit_role').value             = role;
+        document.getElementById('edit_status').value           = status;
+        document.getElementById('edit_password').value         = '';
         document.getElementById('edit_password_confirm').value = '';
+
+        // Toggle shift field sesuai role
+        const shiftEditField = document.getElementById('fieldShiftEdit');
+        const editRoleSelect = document.getElementById('edit_role');
+
+        function toggleShiftEdit(r) {
+            if (r === 'petugas') {
+                shiftEditField.classList.remove('d-none');
+                document.getElementById('edit_shift').value = shift || '';
+            } else {
+                shiftEditField.classList.add('d-none');
+                document.getElementById('edit_shift').value = '';
+            }
+        }
+
+        toggleShiftEdit(role);
+
+        // Saat role diubah di dalam modal edit
+        editRoleSelect.onchange = function () {
+            shift = ''; // reset shift jika role berubah
+            toggleShiftEdit(this.value);
+        };
+
         new bootstrap.Modal(document.getElementById('modalEdit')).show();
     }
 
+    // ── Modal Hapus ─────────────────────────────────────────────
     function bukaModalHapus(id, nama) {
-        document.getElementById('formHapus').action = '/user/' + id;
+        document.getElementById('formHapus').action         = '/user/' + id;
         document.getElementById('hapusNamaUser').textContent = nama;
         new bootstrap.Modal(document.getElementById('modalHapus')).show();
     }
 
+    // ── Toggle Password Visibility ──────────────────────────────
     function togglePwd(fieldId, btn) {
         const input = document.getElementById(fieldId);
         const icon  = btn.querySelector('i');
@@ -417,12 +511,70 @@
             icon.classList.replace('bi-eye-slash', 'bi-eye');
         }
     }
+function printTable(divId, title) {
+    let content = document.getElementById(divId.replace('print', '').toLowerCase() + 'Table')?.innerHTML;
 
+    // fallback kalau id tidak sesuai
+    if (!content) {
+        content = document.getElementById(divId)?.innerHTML;
+    }
+
+    let printWindow = window.open('', '', 'width=900,height=600');
+
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>${title}</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            <style>
+                body { padding: 20px; }
+                h3 { text-align: center; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; }
+                table, th, td { border: 1px solid #000; }
+                th, td { padding: 8px; text-align: left; }
+            </style>
+        </head>
+        <body>
+            <h3>${title}</h3>
+            ${content}
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 500);
+}
+    // ── Re-open modal tambah jika ada validation error ──────────
     @if($errors->any() && old('_from_modal') === 'tambah')
         document.addEventListener('DOMContentLoaded', function () {
             new bootstrap.Modal(document.getElementById('modalTambah')).show();
         });
     @endif
+
+    // ── Toggle field Shift di modal tambah ──────────────────────
+    document.addEventListener('DOMContentLoaded', function () {
+        const roleSelect = document.getElementById('roleTambah');
+        const shiftField = document.getElementById('fieldShift');
+
+        function toggleShift() {
+            if (!roleSelect || !shiftField) return;
+            if (roleSelect.value === 'petugas') {
+                shiftField.classList.remove('d-none');
+            } else {
+                shiftField.classList.add('d-none');
+            }
+        }
+
+        if (roleSelect) {
+            roleSelect.addEventListener('change', toggleShift);
+            toggleShift();
+        }
+    });
 </script>
 @endpush
 @endsection

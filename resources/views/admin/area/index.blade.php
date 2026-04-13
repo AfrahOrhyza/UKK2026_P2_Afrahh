@@ -42,6 +42,14 @@
                             placeholder="Nama area..." value="{{ request('search') }}">
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold mb-1">Ketersediaan</label>
+                    <select name="ketersediaan" class="form-select">
+                        <option value="">-- Semua --</option>
+                        <option value="tersedia" {{ request('ketersediaan') === 'tersedia' ? 'selected' : '' }}>Tersedia</option>
+                        <option value="penuh"    {{ request('ketersediaan') === 'penuh'    ? 'selected' : '' }}>Penuh</option>
+                    </select>
+                </div>
                 <div class="col-md-3 d-flex gap-2">
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-funnel me-1"></i> Filter
@@ -88,15 +96,6 @@
                                 <span class="badge px-2 py-1 {{ $sisa > 0 ? 'bg-success' : 'bg-danger' }}">
                                     {{ $sisa }}
                                 </span>
-                            </td>
-                            <td class="text-center" style="min-width:140px;">
-                                <div class="progress mb-1" style="height:7px;">
-                                    <div class="progress-bar {{ $barColor }}"
-                                         role="progressbar"
-                                         style="width:{{ $persen }}%">
-                                    </div>
-                                </div>
-                                <small class="text-muted">{{ $persen }}%</small>
                             </td>
                             <td class="text-center pe-3">
                                 <div class="d-flex gap-1 justify-content-center">

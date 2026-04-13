@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\KendaraanController;
 use App\Http\Controllers\TarifController;
 use App\Http\Controllers\AreaController;
+use App\Http\Controllers\LogAktivitasController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -50,7 +51,9 @@ Route::middleware('auth')->group(function () {
 });
 
     // Log Aktivitas
-    Route::get('log', [App\Http\Controllers\LogAktivitasController::class, 'index'])->name('log.index');
+    Route::get('/log',         [LogAktivitasController::class, 'index'])->name('log.index');
+Route::delete('/log/all',  [LogAktivitasController::class, 'destroyAll'])->name('log.destroy-all');
+Route::delete('/log/{id}', [LogAktivitasController::class, 'destroy'])->name('log.destroy');
 });
 
 // Protected routes

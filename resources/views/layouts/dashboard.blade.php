@@ -85,13 +85,13 @@
         </a>
     </li>
 
-    <!-- {{-- Area Parkir --}}
+    {{-- Area Parkir --}}
     <li class="menu-item {{ request()->routeIs('area.*') ? 'active' : '' }}">
         <a href="{{ route('area.index') }}" class="menu-link">
             <i class="menu-icon tf-icons bx bx-map-alt"></i>
             <div>Area Parkir</div>
         </a>
-    </li> -->
+    </li>
 
     {{-- Kendaraan --}}
     <li class="menu-item {{ request()->routeIs('kendaraan.*') ? 'active' : '' }}">
@@ -101,13 +101,13 @@
         </a>
     </li>
 
-    <!-- {{-- Log Aktivitas --}}
+    {{-- Log Aktivitas --}}
     <li class="menu-item {{ request()->routeIs('log.*') ? 'active' : '' }}">
         <a href="{{ route('log.index') }}" class="menu-link">
             <i class="menu-icon tf-icons bx bx-history"></i>
             <div>Log Aktivitas</div>
         </a>
-    </li> -->
+    </li>
 
         </ul>
       </aside>

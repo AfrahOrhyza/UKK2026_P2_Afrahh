@@ -1,37 +1,99 @@
 <?php
 
-namespace App\Models;
+namespace App\Http\Controllers;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\AreaParkir;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
-class AreaParkir extends Model
+class AreaController extends Controller
 {
-    protected $table = 'area_parkir';
-    protected $primaryKey = 'id_area';
-    public $timestamps = false;
-
-    protected $fillable = [
-        'nama_area',
-        'kapasitas',
-        'terisi',
-    ];
-
-    // Relasi ke transaksi
-    public function transaksi()
+    public function index(Request $request)
     {
-        return $this->hasMany(Transaksi::class, 'id_area', 'id_area');
+        $query = AreaParkir::query();
+
+        // Filter search
+        if ($request->filled('search')) {
+            $query->where('nama_area', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter ketersediaan
+        if ($request->filled('ketersediaan')) {
+            if ($request->ketersediaan === 'tersedia') {
+                $query->whereRaw('terisi < kapasitas');
+            } elseif ($request->ketersediaan === 'penuh') {
+                $query->whereRaw('terisi >= kapasitas');
+            }
+        }
+
+        $areas = $query->paginate(10)->withQueryString();
+
+        return view('admin.area.index', compact('areas'));
     }
 
-    // Accessor: slot tersedia
-    public function getSisaAttribute()
+    public function store(Request $request)
     {
-        return $this->kapasitas - $this->terisi;
+        $request->validate([
+            'nama_area' => 'required|string|max:100|unique:area_parkir,nama_area',
+            'kapasitas'  => 'required|integer|min:1',
+        ], [
+            'nama_area.required' => 'Nama area wajib diisi.',
+            'nama_area.unique'   => 'Nama area sudah ada.',
+            'kapasitas.required' => 'Kapasitas wajib diisi.',
+            'kapasitas.min'      => 'Kapasitas minimal 1.',
+        ]);
+
+        AreaParkir::create([
+            'nama_area' => $request->nama_area,
+            'kapasitas'  => $request->kapasitas,
+            'terisi'     => 0,
+        ]);
+
+        return redirect()->route('area.index')
+            ->with('success', 'Area parkir berhasil ditambahkan.');
     }
 
-    // Accessor: persentase terisi
-    public function getPersentaseAttribute()
+    public function update(Request $request, AreaParkir $area)
     {
-        if ($this->kapasitas == 0) return 0;
-        return round(($this->terisi / $this->kapasitas) * 100);
+        $request->validate([
+            'nama_area' => [
+                'required', 'string', 'max:100',
+                Rule::unique('area_parkir', 'nama_area')->ignore($area->id_area, 'id_area'),
+            ],
+            'kapasitas' => 'required|integer|min:1',
+            'terisi'    => 'required|integer|min:0|lte:kapasitas',
+        ], [
+            'nama_area.required' => 'Nama area wajib diisi.',
+            'nama_area.unique'   => 'Nama area sudah ada.',
+            'kapasitas.required' => 'Kapasitas wajib diisi.',
+            'kapasitas.min'      => 'Kapasitas minimal 1.',
+            'terisi.lte'         => 'Jumlah terisi tidak boleh melebihi kapasitas.',
+        ]);
+
+        $area->update([
+            'nama_area' => $request->nama_area,
+            'kapasitas'  => $request->kapasitas,
+            'terisi'     => $request->terisi,
+        ]);
+
+        return redirect()->route('area.index')
+            ->with('success', 'Area parkir berhasil diperbarui.');
+    }
+
+    public function destroy(AreaParkir $area)
+    {
+        $transaksiAktif = \App\Models\Transaksi::where('id_area', $area->id_area)
+            ->where('status', 'aktif')
+            ->count();
+
+        if ($transaksiAktif > 0) {
+            return redirect()->route('area.index')
+                ->with('error', "Area '{$area->nama_area}' tidak dapat dihapus karena masih ada {$transaksiAktif} transaksi aktif.");
+        }
+
+        $area->delete();
+
+        return redirect()->route('area.index')
+            ->with('success', 'Area parkir berhasil dihapus.');
     }
 }

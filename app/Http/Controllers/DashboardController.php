@@ -28,4 +28,9 @@ class DashboardController extends Controller
             'totalArea', 'transaksiAktif', 'transaksiTerbaru'
         ));
     }
+    
+    public function petugasIndex()
+{
+    return view('petugas.dashboard'); // sesuaikan nama view-nya
+}
 }
