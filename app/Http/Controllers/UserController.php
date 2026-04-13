@@ -170,18 +170,3 @@ class UserController extends Controller
         return back()->with('success', 'Status user berhasil diubah.');
     }
 }
-
-    return back()->with('success', 'Status user berhasil diubah.');
-
-e546d983e0f129a5922f7dba73e08ba9d5b56f95
-' . $user->name . ' menjadi ' . $statusBaru,
-            'waktu'     => now(),
-        ]);
-
-        return back()->with('success', 'Status user berhasil diubah.');
-    }
-}.';
-    
-.');
-    }
-}
