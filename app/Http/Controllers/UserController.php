@@ -155,13 +155,7 @@ class UserController extends Controller
 
         $user->delete();
 
-        return redirect()->route('user.index')
-            ->with('success', 'User berhasil dihapus.');
-    }
-
-    public function toggleStatus($id_user)
-    {
-        $user = User::findOrFail($id_user);
+        return redirect()->route('user.index');
 
         $statusBaru   = $user->status === 'aktif' ? 'nonaktif' : 'aktif';
         $user->status = $statusBaru;
@@ -174,5 +168,20 @@ class UserController extends Controller
         ]);
 
         return back()->with('success', 'Status user berhasil diubah.');
+    }
+}
+
+    return back()->with('success', 'Status user berhasil diubah.');
+
+e546d983e0f129a5922f7dba73e08ba9d5b56f95
+' . $user->name . ' menjadi ' . $statusBaru,
+            'waktu'     => now(),
+        ]);
+
+        return back()->with('success', 'Status user berhasil diubah.');
+    }
+}.';
+    
+.');
     }
 }
