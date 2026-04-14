@@ -11,9 +11,14 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderByRaw("FIELD(role,'admin','petugas','owner')")->get();
+        $users = User::orderByRaw("FIELD(role,'admin','petugas','owner')")
+            ->when($request->search, fn($q) => $q->where('name', 'like', "%{$request->search}%")
+                                                  ->orWhere('email', 'like', "%{$request->search}%"))
+            ->when($request->role,   fn($q) => $q->where('role', $request->role))
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->get();
 
         return view('admin.user.index', compact('users'));
     }
@@ -33,7 +38,6 @@ class UserController extends Controller
             'status'   => 'required|in:aktif,nonaktif',
         ];
 
-        // Wajib pilih shift kalau role petugas
         if ($request->role === 'petugas') {
             $rules['shift'] = 'required|in:pagi,siang,malam';
         }
@@ -73,8 +77,10 @@ class UserController extends Controller
         return view('admin.user.edit', compact('user'));
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, $id)
     {
+        $user = User::findOrFail($id);
+
         $rules = [
             'name'     => 'required|string|max:100',
             'email'    => [
@@ -84,6 +90,7 @@ class UserController extends Controller
             'password' => 'nullable|string|confirmed',
             'role'     => 'required|in:admin,petugas,owner',
             'status'   => 'required|in:aktif,nonaktif',
+            'shift' => 'required_if:role,petugas'
         ];
 
         if ($request->role === 'petugas') {
@@ -112,7 +119,8 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
-        $user->update($data);
+        // Gunakan update langsung dengan query builder untuk memastikan shift tersimpan
+        User::where('id_user', $id)->update($data);
 
         LogAktivitas::create([
             'user'      => Auth::user()->name,
@@ -155,18 +163,7 @@ class UserController extends Controller
 
         $user->delete();
 
-        return redirect()->route('user.index');
-
-        $statusBaru   = $user->status === 'aktif' ? 'nonaktif' : 'aktif';
-        $user->status = $statusBaru;
-        $user->save();
-
-        LogAktivitas::create([
-            'user'      => Auth::user()->name,
-            'aktivitas' => 'Mengubah status user: ' . $user->name . ' menjadi ' . $statusBaru,
-            'waktu'     => now(),
-        ]);
-
-        return back()->with('success', 'Status user berhasil diubah.');
+        return redirect()->route('user.index')
+            ->with('success', 'User berhasil dihapus.');
     }
 }

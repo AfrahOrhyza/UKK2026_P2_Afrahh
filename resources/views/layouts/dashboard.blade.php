@@ -35,7 +35,7 @@
       {{-- ===== SIDEBAR ===== --}}
       <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
         <div class="app-brand demo">
-          <a href="{{ route('admin') }}" class="app-brand-link">
+  <a href="{{ route('dashboard') }}" class="app-brand-link">
             <span class="app-brand-logo demo">
               {{-- Logo Sneat --}}
               <svg width="25" viewBox="0 0 25 42" xmlns="http://www.w3.org/2000/svg">
@@ -58,26 +58,36 @@
 
         <ul class="menu-inner py-1">
           {{-- Dashboard --}}
-          <li class="menu-item {{ request()->routeIs('admin') ? 'active' : '' }}">
-            <a href="{{ route('admin') }}" class="menu-link">
-              <i class="menu-icon tf-icons bx bx-home-circle"></i>
-              <div>Dashboard</div>
-            </a>
+          @php
+              $role = auth()->user()->role ?? null;
+          @endphp
+
+          <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+              <a href="{{ route('dashboard') }}" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                  <div>Dashboard</div>
+              </a>
           </li>
 
           <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Master Data</span>
           </li>
+@php
+    $role = auth()->user()->role ?? null;
+@endphp
 
-          {{-- Kelola User --}}
-          <li class="menu-item {{ request()->routeIs('user.*') ? 'active' : '' }}">
-            <a href="{{ route('user.index') }}" class="menu-link">
-              <i class="menu-icon tf-icons bx bx-group"></i>
-              <div>Kelola User</div>
-            </a>
-          </li>
+{{-- ================= ADMIN MENU SAJA ================= --}}
+@if($role === 'admin')
 
-         {{-- Tarif --}}
+    {{-- Kelola User --}}
+    <li class="menu-item {{ request()->routeIs('user.*') ? 'active' : '' }}">
+        <a href="{{ route('user.index') }}" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-group"></i>
+            <div>Kelola User</div>
+        </a>
+    </li>
+
+    {{-- Tarif --}}
     <li class="menu-item {{ request()->routeIs('tarif.*') ? 'active' : '' }}">
         <a href="{{ route('tarif.index') }}" class="menu-link">
             <i class="menu-icon tf-icons bx bx-dollar-circle"></i>
@@ -108,6 +118,8 @@
             <div>Log Aktivitas</div>
         </a>
     </li>
+
+@endif
 
         </ul>
       </aside>
@@ -159,10 +171,8 @@
                   <li><div class="dropdown-divider"></div></li>
                   <li>
                     <form method="POST" action="{{ route('logout') }}">
-                      @csrf
-                      <button type="submit" class="dropdown-item text-danger">
-                        <i class="bx bx-power-off me-2"></i> Log Out
-                      </button>
+                        @csrf
+                        <button type="submit">Logout</button>
                     </form>
                   </li>
                 </ul>

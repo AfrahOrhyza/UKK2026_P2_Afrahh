@@ -23,17 +23,18 @@ class AuthController extends Controller
             'terms'    => 'accepted',
         ]);
 
-        $user = User::create([
+        User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => 'user',
+
+            // 🔥 FIX: jangan pakai "user"
+            'role'     => 'petugas', // atau admin kalau kamu mau default lain
             'status'   => 'aktif',
+            'shift'    => null,
         ]);
 
-        Auth::login($user);
-
-        return redirect()->route('dashboard');
+        return redirect()->route('login')->with('success', 'Register berhasil, silakan login');
     }
 
     public function showLogin()
@@ -41,24 +42,34 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|string',
-        ]);
+public function login(Request $request)
+{
+    $request->validate([
+        'email'    => 'required|email',
+        'password' => 'required|string',
+    ]);
 
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
-        }
-
+    if (!Auth::attempt($request->only('email', 'password'))) {
         return back()->withErrors([
             'email' => 'Email atau password salah.',
-        ])->onlyInput('email');
+        ]);
     }
+
+    $request->session()->regenerate();
+
+    $user = Auth::user();
+
+    // ❌ kalau tidak aktif
+    if ($user->status !== 'aktif') {
+        Auth::logout();
+        return back()->withErrors([
+            'email' => 'Akun Anda tidak aktif.',
+        ]);
+    }
+
+    // ✅ SEMUA ROLE MASUK KE 1 ROUTE
+    return redirect()->route('dashboard');
+}
 
     public function logout(Request $request)
     {

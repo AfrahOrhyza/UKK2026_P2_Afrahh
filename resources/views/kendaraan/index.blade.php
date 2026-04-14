@@ -11,9 +11,14 @@
             <h4 class="fw-bold mb-0">Kelola Kendaraan</h4>
             <small class="text-muted">Manajemen data kendaraan sistem parkir</small>
         </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
-            <i class="bi bi-plus-circle me-1"></i> Tambah Kendaraan
-        </button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" onclick="cetakKendaraan()">
+                <i class="bi bi-printer me-1"></i> Cetak
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
+                <i class="bi bi-plus-circle me-1"></i> Tambah Kendaraan
+            </button>
+        </div>
     </div>
 
     {{-- Alert --}}
@@ -344,6 +349,79 @@
         document.getElementById('formHapus').action = '/kendaraan/' + id;
         document.getElementById('hapusNamaKendaraan').textContent = plat;
         new bootstrap.Modal(document.getElementById('modalHapus')).show();
+    }
+
+    function cetakKendaraan() {
+        var table = document.querySelector('table');
+        var rows  = table.querySelectorAll('tbody tr');
+        var rowsHtml = '';
+
+        rows.forEach(function(row) {
+            var cols = row.querySelectorAll('td');
+            if (cols.length < 7) return;
+
+            var no      = cols[0] ? cols[0].innerText.trim() : '';
+            var plat    = cols[1] ? cols[1].innerText.trim() : '';
+            var warna   = cols[2] ? cols[2].innerText.trim() : '';
+            var jenis   = cols[3] ? cols[3].innerText.trim() : '';
+            var pemilik = cols[4] ? cols[4].innerText.trim() : '';
+            var status  = cols[5] ? cols[5].innerText.trim() : '';
+            var dibuat  = cols[6] ? cols[6].innerText.trim() : '';
+
+            rowsHtml += '<tr>'
+                + '<td>' + no      + '</td>'
+                + '<td>' + plat    + '</td>'
+                + '<td>' + warna   + '</td>'
+                + '<td>' + jenis   + '</td>'
+                + '<td>' + pemilik + '</td>'
+                + '<td>' + status  + '</td>'
+                + '<td>' + dibuat  + '</td>'
+                + '</tr>';
+        });
+
+        var tanggal = new Date().toLocaleDateString('id-ID', {
+            day: '2-digit', month: 'long', year: 'numeric'
+        });
+
+        var html = '<!DOCTYPE html>'
+            + '<html><head>'
+            + '<meta charset="UTF-8">'
+            + '<title>Laporan Kendaraan</title>'
+            + '<style>'
+            + 'body { font-family: Arial, sans-serif; font-size: 13px; padding: 24px; }'
+            + 'h2 { text-align: center; margin-bottom: 4px; }'
+            + '.sub { text-align: center; color: #666; font-size: 12px; margin-bottom: 20px; }'
+            + 'table { width: 100%; border-collapse: collapse; }'
+            + 'th { background: #f0f0f0; font-weight: bold; }'
+            + 'th, td { border: 1px solid #ccc; padding: 7px 10px; text-align: left; vertical-align: top; }'
+            + '.btn-print { margin-top: 16px; padding: 8px 20px; font-size: 13px; cursor: pointer; }'
+            + '@media print { .btn-print { display: none; } }'
+            + '</style>'
+            + '</head><body>'
+            + '<h2>Laporan Data Kendaraan</h2>'
+            + '<p class="sub">Dicetak pada: ' + tanggal + '</p>'
+            + '<table>'
+            + '<thead><tr>'
+            + '<th>#</th>'
+            + '<th>Plat Nomor</th>'
+            + '<th>Warna</th>'
+            + '<th>Jenis Kendaraan</th>'
+            + '<th>Pemilik</th>'
+            + '<th>Status</th>'
+            + '<th>Dibuat</th>'
+            + '</tr></thead>'
+            + '<tbody>' + rowsHtml + '</tbody>'
+            + '</table>'
+            + '<button class="btn-print" onclick="window.print()">Print Sekarang</button>'
+            + '</body></html>';
+
+        var win = window.open('', '_blank');
+        if (!win) {
+            alert('Popup diblokir oleh browser!\nSilakan izinkan popup untuk halaman ini, lalu coba lagi.');
+            return;
+        }
+        win.document.write(html);
+        win.document.close();
     }
 
     @if($errors->any() && old('_from_modal') === 'tambah')

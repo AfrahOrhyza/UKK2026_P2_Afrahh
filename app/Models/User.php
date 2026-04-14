@@ -18,6 +18,7 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'shift',  // ← ditambahkan
     ];
 
     protected $hidden = [
@@ -30,14 +31,15 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-        /**
+
+    /**
      * Relasi: User memiliki banyak kendaraan
      */
     public function kendaraans()
     {
         return $this->hasMany(Kendaraan::class, 'id_user', 'id_user');
     }
- 
+
     /**
      * Relasi: User memiliki banyak transaksi
      */
@@ -45,7 +47,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Transaksi::class, 'id_user', 'id_user');
     }
- 
+
     /**
      * Relasi: User memiliki banyak log aktivitas
      */
@@ -53,7 +55,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(LogAktivitas::class, 'id_user', 'id_user');
     }
- 
+
     /**
      * Relasi: User memiliki banyak riwayat
      */
@@ -61,7 +63,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Riwayat::class, 'id_user', 'id_user');
     }
- 
+
     /**
      * Badge warna role
      */
@@ -74,7 +76,7 @@ class User extends Authenticatable
             default   => 'secondary',
         };
     }
- 
+
     /**
      * Badge warna status
      */

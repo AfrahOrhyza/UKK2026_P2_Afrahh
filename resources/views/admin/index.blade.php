@@ -54,7 +54,7 @@
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="mb-2 text-muted">Masuk Hari Ini</h6>
-                        <h3 class="mb-0 fw-bold">{{ $masuk }}</h3>
+                        <h3 class="mb-0 fw-bold">{{ $masukHariIni }}</h3>
                         <small class="text-muted">Dari waktu_masuk</small>
                     </div>
                     <div class="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center"
@@ -71,7 +71,7 @@
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="mb-2 text-muted">Keluar Hari Ini</h6>
-                        <h3 class="mb-0 fw-bold">{{ $keluar }}</h3>
+                        <h3 class="mb-0 fw-bold">{{ $keluarHariIni }}</h3>
                         <small class="text-muted">Dari waktu_keluar</small>
                     </div>
                     <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center"

@@ -92,4 +92,5 @@ class KendaraanController extends Controller
 
         return redirect()->route('kendaraan.index')->with('success', 'Status kendaraan berhasil diubah.');
     }
+    
 }

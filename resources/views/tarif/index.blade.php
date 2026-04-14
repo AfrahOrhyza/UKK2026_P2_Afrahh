@@ -11,18 +11,23 @@
             <h4 class="fw-bold mb-0">Kelola Tarif</h4>
             <small class="text-muted">Manajemen tarif parkir per jenis kendaraan</small>
         </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
-            <i class="bi bi-plus-circle me-1"></i> Tambah Tarif
-        </button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" onclick="cetakTarif()">
+                <i class="bi bi-printer me-1"></i> Cetak
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
+                <i class="bi bi-plus-circle me-1"></i> Tambah Tarif
+            </button>
+        </div>
     </div>
 
     {{-- Alert --}}
-    @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show">
-        <i class="bi bi-exclamation-circle me-2"></i>{{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show">
             <i class="bi bi-exclamation-circle me-2"></i>{{ session('error') }}
@@ -240,6 +245,67 @@
         document.getElementById('formHapus').action = '/tarif/' + id;
         document.getElementById('hapusNamaTarif').textContent = jenis;
         new bootstrap.Modal(document.getElementById('modalHapus')).show();
+    }
+
+    function cetakTarif() {
+        var table = document.querySelector('table');
+        var rows  = table.querySelectorAll('tbody tr');
+        var rowsHtml = '';
+
+        rows.forEach(function(row) {
+            var cols = row.querySelectorAll('td');
+            if (cols.length < 3) return;
+
+            var no    = cols[0] ? cols[0].innerText.trim() : '';
+            var jenis = cols[1] ? cols[1].innerText.trim() : '';
+            var tarif = cols[2] ? cols[2].innerText.trim() : '';
+
+            rowsHtml += '<tr>'
+                + '<td>' + no    + '</td>'
+                + '<td>' + jenis + '</td>'
+                + '<td>' + tarif + '</td>'
+                + '</tr>';
+        });
+
+        var tanggal = new Date().toLocaleDateString('id-ID', {
+            day: '2-digit', month: 'long', year: 'numeric'
+        });
+
+        var html = '<!DOCTYPE html>'
+            + '<html><head>'
+            + '<meta charset="UTF-8">'
+            + '<title>Laporan Tarif</title>'
+            + '<style>'
+            + 'body { font-family: Arial, sans-serif; font-size: 13px; padding: 24px; }'
+            + 'h2 { text-align: center; margin-bottom: 4px; }'
+            + '.sub { text-align: center; color: #666; font-size: 12px; margin-bottom: 20px; }'
+            + 'table { width: 100%; border-collapse: collapse; }'
+            + 'th { background: #f0f0f0; font-weight: bold; }'
+            + 'th, td { border: 1px solid #ccc; padding: 7px 10px; text-align: left; vertical-align: top; }'
+            + '.btn-print { margin-top: 16px; padding: 8px 20px; font-size: 13px; cursor: pointer; }'
+            + '@media print { .btn-print { display: none; } }'
+            + '</style>'
+            + '</head><body>'
+            + '<h2>Laporan Data Tarif</h2>'
+            + '<p class="sub">Dicetak pada: ' + tanggal + '</p>'
+            + '<table>'
+            + '<thead><tr>'
+            + '<th>#</th>'
+            + '<th>Jenis Kendaraan</th>'
+            + '<th>Tarif Per Jam</th>'
+            + '</tr></thead>'
+            + '<tbody>' + rowsHtml + '</tbody>'
+            + '</table>'
+            + '<button class="btn-print" onclick="window.print()">Print Sekarang</button>'
+            + '</body></html>';
+
+        var win = window.open('', '_blank');
+        if (!win) {
+            alert('Popup diblokir oleh browser!\nSilakan izinkan popup untuk halaman ini, lalu coba lagi.');
+            return;
+        }
+        win.document.write(html);
+        win.document.close();
     }
 
     @if($errors->any() && old('_from_modal') === 'tambah')

@@ -11,9 +11,14 @@
             <h4 class="fw-bold mb-0">Kelola Area Parkir</h4>
             <small class="text-muted">Manajemen data area parkir</small>
         </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
-            <i class="bi bi-plus-circle me-1"></i> Tambah Area
-        </button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" onclick="cetakArea()">
+                <i class="bi bi-printer me-1"></i> Cetak
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
+                <i class="bi bi-plus-circle me-1"></i> Tambah Area
+            </button>
+        </div>
     </div>
 
     {{-- Alert --}}
@@ -41,14 +46,6 @@
                         <input type="text" name="search" class="form-control"
                             placeholder="Nama area..." value="{{ request('search') }}">
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold mb-1">Ketersediaan</label>
-                    <select name="ketersediaan" class="form-select">
-                        <option value="">-- Semua --</option>
-                        <option value="tersedia" {{ request('ketersediaan') === 'tersedia' ? 'selected' : '' }}>Tersedia</option>
-                        <option value="penuh"    {{ request('ketersediaan') === 'penuh'    ? 'selected' : '' }}>Penuh</option>
-                    </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
                     <button type="submit" class="btn btn-primary w-100">
@@ -80,9 +77,7 @@
                     <tbody>
                         @forelse($areas as $index => $area)
                         @php
-                            $sisa     = $area->kapasitas - $area->terisi;
-                            $persen   = $area->kapasitas > 0 ? round(($area->terisi / $area->kapasitas) * 100) : 0;
-                            $barColor = $persen >= 90 ? 'bg-danger' : ($persen >= 60 ? 'bg-warning' : 'bg-success');
+                            $sisa = $area->kapasitas - $area->terisi;
                         @endphp
                         <tr>
                             <td class="ps-3 text-muted">{{ $areas->firstItem() + $index }}</td>
@@ -120,7 +115,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-map fs-1 d-block mb-2 opacity-25"></i>
                                 Tidak ada data area parkir ditemukan.
                             </td>
@@ -273,6 +268,73 @@
         document.getElementById('formHapus').action = '/area/' + id;
         document.getElementById('hapusNamaArea').textContent = nama;
         new bootstrap.Modal(document.getElementById('modalHapus')).show();
+    }
+
+    function cetakArea() {
+        var table = document.querySelector('table');
+        var rows  = table.querySelectorAll('tbody tr');
+        var rowsHtml = '';
+
+        rows.forEach(function(row) {
+            var cols = row.querySelectorAll('td');
+            if (cols.length < 5) return;
+
+            var no        = cols[0] ? cols[0].innerText.trim() : '';
+            var nama      = cols[1] ? cols[1].innerText.trim() : '';
+            var kapasitas = cols[2] ? cols[2].innerText.trim() : '';
+            var terisi    = cols[3] ? cols[3].innerText.trim() : '';
+            var sisa      = cols[4] ? cols[4].innerText.trim() : '';
+
+            rowsHtml += '<tr>'
+                + '<td>' + no        + '</td>'
+                + '<td>' + nama      + '</td>'
+                + '<td style="text-align:center">' + kapasitas + '</td>'
+                + '<td style="text-align:center">' + terisi    + '</td>'
+                + '<td style="text-align:center">' + sisa      + '</td>'
+                + '</tr>';
+        });
+
+        var tanggal = new Date().toLocaleDateString('id-ID', {
+            day: '2-digit', month: 'long', year: 'numeric'
+        });
+
+        var html = '<!DOCTYPE html>'
+            + '<html><head>'
+            + '<meta charset="UTF-8">'
+            + '<title>Laporan Area Parkir</title>'
+            + '<style>'
+            + 'body { font-family: Arial, sans-serif; font-size: 13px; padding: 24px; }'
+            + 'h2 { text-align: center; margin-bottom: 4px; }'
+            + '.sub { text-align: center; color: #666; font-size: 12px; margin-bottom: 20px; }'
+            + 'table { width: 100%; border-collapse: collapse; }'
+            + 'th { background: #f0f0f0; font-weight: bold; }'
+            + 'th, td { border: 1px solid #ccc; padding: 7px 10px; text-align: left; vertical-align: top; }'
+            + '.btn-print { margin-top: 16px; padding: 8px 20px; font-size: 13px; cursor: pointer; }'
+            + '@media print { .btn-print { display: none; } }'
+            + '</style>'
+            + '</head><body>'
+            + '<h2>Laporan Data Area Parkir</h2>'
+            + '<p class="sub">Dicetak pada: ' + tanggal + '</p>'
+            + '<table>'
+            + '<thead><tr>'
+            + '<th>#</th>'
+            + '<th>Nama Area</th>'
+            + '<th style="text-align:center">Kapasitas</th>'
+            + '<th style="text-align:center">Terisi</th>'
+            + '<th style="text-align:center">Sisa</th>'
+            + '</tr></thead>'
+            + '<tbody>' + rowsHtml + '</tbody>'
+            + '</table>'
+            + '<button class="btn-print" onclick="window.print()">Print Sekarang</button>'
+            + '</body></html>';
+
+        var win = window.open('', '_blank');
+        if (!win) {
+            alert('Popup diblokir oleh browser!\nSilakan izinkan popup untuk halaman ini, lalu coba lagi.');
+            return;
+        }
+        win.document.write(html);
+        win.document.close();
     }
 
     @if($errors->any() && old('_from_modal') === 'tambah')

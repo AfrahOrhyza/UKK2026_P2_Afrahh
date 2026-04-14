@@ -76,7 +76,7 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="fw-bold text-dark mb-0">Data Admin</h6>
-                <button onclick="printTable('printAdmin', 'Data Admin')" class="btn btn-success btn-sm">
+                <button onclick="printTable('adminTable', 'Data Admin')" class="btn btn-success btn-sm">
                     <i class="bi bi-printer me-1"></i> Print
                 </button>
             </div>
@@ -95,7 +95,12 @@
                             <td>{{ $no++ }}</td>
                             <td>{{ $user->name }}</td>
                             <td>{{ $user->email }}</td>
-                            <td><span class="badge bg-success">{{ ucfirst($user->status) }}</span></td>
+                            {{-- FIX: tidak hardcode bg-success, ikut nilai status --}}
+                            <td>
+                                <span class="badge bg-{{ $user->status === 'aktif' ? 'success' : 'danger' }}">
+                                    {{ ucfirst($user->status) }}
+                                </span>
+                            </td>
                             <td>{{ $user->created_at->format('d M Y') }}</td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-sm btn-outline-primary" title="Edit"
@@ -122,7 +127,7 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="fw-bold text-dark mb-0">Data Petugas</h6>
-                 <button onclick="printTable('printPetugas', 'Data Petugas')" class="btn btn-success btn-sm">
+                <button onclick="printTable('petugasTable', 'Data Petugas')" class="btn btn-success btn-sm">
                     <i class="bi bi-printer me-1"></i> Print
                 </button>
             </div>
@@ -137,7 +142,7 @@
                     <tbody>
                         @php
                             $no  = 1;
-                            $jam = now()->hour;
+                            $jam = now()->setTimezone('Asia/Jakarta')->hour;
                         @endphp
                         @forelse($users->where('role','petugas') as $user)
                         <tr>
@@ -162,13 +167,10 @@
                                 <span class="badge bg-{{ $shiftColor }}">
                                     {{ $user->shift ? ucfirst($user->shift) : '-' }}
                                 </span>
-                                <span class="badge bg-{{ $isOn ? 'success' : 'secondary' }}">
-                                    {{ $isOn ? 'ON' : 'OFF' }}
-                                </span>
                             </td>
-                            <td>
-                                <span class="badge bg-{{ $user->status === 'aktif' ? 'success' : 'danger' }}">
-                                    {{ ucfirst($user->status) }}
+                              <td>
+                                <span class="badge bg-{{ $isOn ? 'success' : 'danger' }}">
+                                    {{ $isOn ? 'Aktif' : 'Nonaktif' }}
                                 </span>
                             </td>
                             <td>{{ $user->created_at->format('d M Y') }}</td>
@@ -197,7 +199,7 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="fw-bold text-dark mb-0">Data Owner</h6>
-                <button onclick="printTable('printOwner', 'Data Owner')" class="btn btn-success btn-sm">
+                <button onclick="printTable('ownerTable', 'Data Owner')" class="btn btn-success btn-sm">
                     <i class="bi bi-printer me-1"></i> Print
                 </button>
             </div>
@@ -216,7 +218,12 @@
                             <td>{{ $no++ }}</td>
                             <td>{{ $user->name }}</td>
                             <td>{{ $user->email }}</td>
-                            <td><span class="badge bg-success">{{ ucfirst($user->status) }}</span></td>
+                            {{-- FIX: tidak hardcode bg-success, ikut nilai status --}}
+                            <td>
+                                <span class="badge bg-{{ $user->status === 'aktif' ? 'success' : 'danger' }}">
+                                    {{ ucfirst($user->status) }}
+                                </span>
+                            </td>
                             <td>{{ $user->created_at->format('d M Y') }}</td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-sm btn-outline-primary" title="Edit"
@@ -457,44 +464,65 @@
 
 @push('scripts')
 <script>
+    let _pendingShift  = '';
+    let _pendingRole   = '';
+    let _pendingStatus = '';
+
     // ── Modal Edit ──────────────────────────────────────────────
     function bukaModalEdit(id, nama, email, role, status, shift) {
         document.getElementById('formEdit').action             = '/user/' + id;
         document.getElementById('edit_name').value             = nama;
         document.getElementById('edit_email').value            = email;
-        document.getElementById('edit_role').value             = role;
-        document.getElementById('edit_status').value           = status;
         document.getElementById('edit_password').value         = '';
         document.getElementById('edit_password_confirm').value = '';
 
-        // Toggle shift field sesuai role
-        const shiftEditField = document.getElementById('fieldShiftEdit');
-        const editRoleSelect = document.getElementById('edit_role');
+        // Simpan ke variabel luar agar tidak ter-overwrite closure
+        _pendingRole   = role   || '';
+        _pendingStatus = status || '';
+        _pendingShift  = shift  || '';
 
-        function toggleShiftEdit(r) {
-            if (r === 'petugas') {
-                shiftEditField.classList.remove('d-none');
-                document.getElementById('edit_shift').value = shift || '';
+        const modalEl       = document.getElementById('modalEdit');
+        const modalInstance = new bootstrap.Modal(modalEl);
+
+        // Set semua nilai SETELAH modal benar-benar tampil
+        // agar tidak di-reset animasi Bootstrap
+        modalEl.addEventListener('shown.bs.modal', function handler() {
+            const roleSelect   = document.getElementById('edit_role');
+            const statusSelect = document.getElementById('edit_status');
+            const shiftField   = document.getElementById('fieldShiftEdit');
+            const shiftSelect  = document.getElementById('edit_shift');
+
+            roleSelect.value   = _pendingRole;
+            statusSelect.value = _pendingStatus;
+
+            if (_pendingRole === 'petugas') {
+                shiftField.classList.remove('d-none');
+                shiftSelect.value = _pendingShift;
             } else {
-                shiftEditField.classList.add('d-none');
-                document.getElementById('edit_shift').value = '';
+                shiftField.classList.add('d-none');
+                shiftSelect.value = '';
             }
-        }
 
-        toggleShiftEdit(role);
+            // Saat role diubah di dalam modal
+            roleSelect.onchange = function () {
+                _pendingShift = '';
+                if (this.value === 'petugas') {
+                    shiftField.classList.remove('d-none');
+                } else {
+                    shiftField.classList.add('d-none');
+                    shiftSelect.value = '';
+                }
+            };
 
-        // Saat role diubah di dalam modal edit
-        editRoleSelect.onchange = function () {
-            shift = ''; // reset shift jika role berubah
-            toggleShiftEdit(this.value);
-        };
+            modalEl.removeEventListener('shown.bs.modal', handler);
+        });
 
-        new bootstrap.Modal(document.getElementById('modalEdit')).show();
+        modalInstance.show();
     }
 
     // ── Modal Hapus ─────────────────────────────────────────────
     function bukaModalHapus(id, nama) {
-        document.getElementById('formHapus').action         = '/user/' + id;
+        document.getElementById('formHapus').action          = '/user/' + id;
         document.getElementById('hapusNamaUser').textContent = nama;
         new bootstrap.Modal(document.getElementById('modalHapus')).show();
     }
@@ -511,44 +539,40 @@
             icon.classList.replace('bi-eye-slash', 'bi-eye');
         }
     }
-function printTable(divId, title) {
-    let content = document.getElementById(divId.replace('print', '').toLowerCase() + 'Table')?.innerHTML;
 
-    // fallback kalau id tidak sesuai
-    if (!content) {
-        content = document.getElementById(divId)?.innerHTML;
+    // ── Print Table ─────────────────────────────────────────────
+    function printTable(divId, title) {
+        const content = document.getElementById(divId)?.innerHTML;
+        if (!content) return;
+
+        const printWindow = window.open('', '', 'width=900,height=600');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>${title}</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    body { padding: 20px; }
+                    h3 { text-align: center; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    table, th, td { border: 1px solid #000; }
+                    th, td { padding: 8px; text-align: left; }
+                </style>
+            </head>
+            <body>
+                <h3>${title}</h3>
+                ${content}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
     }
 
-    let printWindow = window.open('', '', 'width=900,height=600');
-
-    printWindow.document.write(`
-        <html>
-        <head>
-            <title>${title}</title>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-            <style>
-                body { padding: 20px; }
-                h3 { text-align: center; margin-bottom: 20px; }
-                table { width: 100%; border-collapse: collapse; }
-                table, th, td { border: 1px solid #000; }
-                th, td { padding: 8px; text-align: left; }
-            </style>
-        </head>
-        <body>
-            <h3>${title}</h3>
-            ${content}
-        </body>
-        </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.focus();
-
-    setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-    }, 500);
-}
     // ── Re-open modal tambah jika ada validation error ──────────
     @if($errors->any() && old('_from_modal') === 'tambah')
         document.addEventListener('DOMContentLoaded', function () {

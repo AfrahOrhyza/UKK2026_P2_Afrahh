@@ -7,13 +7,22 @@ use App\Http\Controllers\KendaraanController;
 use App\Http\Controllers\TarifController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\LogAktivitasController;
+use App\Http\Controllers\DashboardController;
 
-Route::get('/', function () {
-    return redirect('/login');
-});
+/*
+|--------------------------------------------------------------------------
+| ROOT
+|--------------------------------------------------------------------------
+*/
+Route::get('/', fn () => redirect('/login'));
 
-// Guest routes
+/*
+|--------------------------------------------------------------------------
+| GUEST
+|--------------------------------------------------------------------------
+*/
 Route::middleware('guest')->group(function () {
+
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 
@@ -21,48 +30,78 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-//user
-// user
-Route::resource('user', UserController::class);
-Route::patch('user/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('user.toggle-status');
-
+/*
+|--------------------------------------------------------------------------
+| AUTH (SEMUA ROLE LOGIN)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/dashboard', fn() => redirect('/admin'))->name('dashboard');
-    Route::get('/admin', [App\Http\Controllers\DashboardController::class, 'index'])->name('admin');
 
-    // User
+    /*
+    |-----------------------------
+    | LOGOUT
+    |-----------------------------
+    */
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    /*
+    |-----------------------------
+    | DASHBOARD (ROLE BASED)
+    |-----------------------------
+    */
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    /*
+    | OPTIONAL BACKUP ROUTE
+    */
+    Route::get('/admin', fn () => redirect('/dashboard'));
+
+    /*
+    |-----------------------------
+    | USER (HANYA ADMIN DI BATASI DI CONTROLLER/MIDDLEWARE)
+    |-----------------------------
+    */
     Route::resource('user', UserController::class);
-    Route::patch('user/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('user.toggle-status');
 
-    // Tarif
-    Route::resource('tarif', App\Http\Controllers\TarifController::class)->except(['show', 'create', 'edit']);
+    Route::patch('user/{id}/toggle-status', [UserController::class, 'toggleStatus'])
+        ->name('user.toggle-status');
 
-    // Area Parkir
-   Route::resource('area', AreaController::class);
+    /*
+    |-----------------------------
+    | TARIF
+    |-----------------------------
+    */
+    Route::resource('tarif', TarifController::class)
+        ->except(['show', 'create', 'edit']);
 
-    // Kendaraan
- Route::prefix('kendaraan')->name('kendaraan.')->group(function () {
-    Route::get('/',                     [KendaraanController::class, 'index'])->name('index');
-    Route::post('/',                    [KendaraanController::class, 'store'])->name('store');
-    Route::put('/{id}',                 [KendaraanController::class, 'update'])->name('update');
-    Route::delete('/{id}',              [KendaraanController::class, 'destroy'])->name('destroy');
-    Route::patch('/{id}/toggle-status', [KendaraanController::class, 'toggleStatus'])->name('toggle-status');
-});
+    /*
+    |-----------------------------
+    | AREA
+    |-----------------------------
+    */
+    Route::resource('area', AreaController::class);
 
-    // Log Aktivitas
-    Route::get('/log',         [LogAktivitasController::class, 'index'])->name('log.index');
-Route::delete('/log/all',  [LogAktivitasController::class, 'destroyAll'])->name('log.destroy-all');
-Route::delete('/log/{id}', [LogAktivitasController::class, 'destroy'])->name('log.destroy');
-});
+    /*
+    |-----------------------------
+    | KENDARAAN
+    |-----------------------------
+    */
+    Route::prefix('kendaraan')->name('kendaraan.')->group(function () {
 
-// Protected routes
-Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+        Route::get('/', [KendaraanController::class, 'index'])->name('index');
+        Route::post('/', [KendaraanController::class, 'store'])->name('store');
+        Route::put('/{id}', [KendaraanController::class, 'update'])->name('update');
+        Route::delete('/{id}', [KendaraanController::class, 'destroy'])->name('destroy');
+        Route::patch('/{id}/toggle-status', [KendaraanController::class, 'toggleStatus'])
+            ->name('toggle-status');
+    });
 
-    Route::get('/dashboard', function () {
-        return redirect('/admin');
-    })->name('dashboard');
+    /*
+    |-----------------------------
+    | LOG
+    |-----------------------------
+    */
+    Route::get('/log', [LogAktivitasController::class, 'index'])->name('log.index');
+    Route::delete('/log/all', [LogAktivitasController::class, 'destroyAll'])->name('log.destroy-all');
+    Route::delete('/log/{id}', [LogAktivitasController::class, 'destroy'])->name('log.destroy');
 
-    Route::get('/admin', [App\Http\Controllers\DashboardController::class, 'index'])->name('admin');
 });
