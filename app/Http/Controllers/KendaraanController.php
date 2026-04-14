@@ -32,27 +32,24 @@ class KendaraanController extends Controller
         return view('kendaraan.index', compact('kendaraans', 'tarifs', 'users'));
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'plat_nomor' => 'required|string|max:20|unique:kendaraan,plat_nomor',
-            'warna'      => 'required|string|max:50',
-            'status'     => 'required|in:parkir,keluar',
-            'id_tarif'   => 'required|exists:tarif,id_tarif',
-            'id_user'    => 'nullable|exists:user,id_user',
-        ]);
+public function store(Request $request)
+{
+    $request->validate([
+        'plat_nomor' => 'required|string|max:20|unique:kendaraan,plat_nomor',
+        'warna'      => 'required|string|max:50',
+        'id_tarif'   => 'required|exists:tarif,id_tarif',
+    ]);
 
-        Kendaraan::create([
-            'plat_nomor' => strtoupper($request->plat_nomor),
-            'warna'      => $request->warna,
-            'status'     => $request->status,
-            'id_tarif'   => $request->id_tarif,
-            'id_user'    => $request->id_user ?: null,
-        ]);
+    Kendaraan::create([
+        'plat_nomor' => strtoupper($request->plat_nomor),
+        'warna'      => $request->warna,
+        'status'     => 'parkir',
+        'id_tarif'   => $request->id_tarif,
+        'id_user'    => null,
+    ]);
 
-        return redirect()->route('kendaraan.index')->with('success', 'Kendaraan berhasil ditambahkan.');
-    }
-
+    return redirect()->route('kendaraan.index')->with('success', 'Kendaraan berhasil ditambahkan.');
+}
     public function update(Request $request, $id)
     {
         $kendaraan = Kendaraan::findOrFail($id);

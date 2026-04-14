@@ -125,43 +125,19 @@
 {{-- ================= PETUGAS MENU SAJA ================= --}}
 @if($role === 'petugas')
 
-    {{-- Kelola User --}}
-    <li class="menu-item {{ request()->routeIs('user.*') ? 'active' : '' }}">
-        <a href="{{ route('user.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-group"></i>
-            <div>Kelola User</div>
-        </a>
-    </li>
-
-    {{-- Tarif --}}
-    <li class="menu-item {{ request()->routeIs('tarif.*') ? 'active' : '' }}">
-        <a href="{{ route('tarif.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-dollar-circle"></i>
-            <div>Tarif</div>
-        </a>
-    </li>
-
-    {{-- Area Parkir --}}
-    <li class="menu-item {{ request()->routeIs('area.*') ? 'active' : '' }}">
-        <a href="{{ route('area.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-map-alt"></i>
-            <div>Area Parkir</div>
-        </a>
-    </li>
-
-    {{-- Kendaraan --}}
+    {{-- Kelola kendaraan --}}
     <li class="menu-item {{ request()->routeIs('kendaraan.*') ? 'active' : '' }}">
         <a href="{{ route('kendaraan.index') }}" class="menu-link">
             <i class="menu-icon tf-icons bx bx-car"></i>
-            <div>Kendaraan</div>
+            <div>Kelola kendaraan</div>
         </a>
     </li>
 
-    {{-- Log Aktivitas --}}
-    <li class="menu-item {{ request()->routeIs('log.*') ? 'active' : '' }}">
-        <a href="{{ route('log.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-history"></i>
-            <div>Log Aktivitas</div>
+    {{-- Transaksi --}}
+    <li class="menu-item {{ request()->routeIs('transaksi.*') ? 'active' : '' }}">
+        <a href="{{ route('transaksi.index') }}" class="menu-link">
+            <i class="menu-icon bi bi-cash-stack"></i>
+            <div>Transaksi</div>
         </a>
     </li>
 

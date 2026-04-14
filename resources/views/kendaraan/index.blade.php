@@ -78,8 +78,7 @@
                             <th>Plat Nomor</th>
                             <th>Warna</th>
                             <th>Jenis Kendaraan</th>
-                            <th>Pemilik</th>
-                            <th>Status</th>
+                            <th>Tarif / jam</th>
                             <th>Dibuat</th>
                             <th class="text-center pe-3" style="width:150px">Aksi</th>
                         </tr>
@@ -94,26 +93,14 @@
                             </td>
                             <td>{{ $kendaraan->warna }}</td>
                             <td>{{ $kendaraan->tarif->jenis_kendaraan ?? '-' }}</td>
-                            <td>{{ $kendaraan->user->name ?? '-' }}</td>
                             <td>
-                                <span class="badge px-2 py-1 {{ $kendaraan->status === 'parkir' ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ ucfirst($kendaraan->status) }}
-                                </span>
+                            Rp {{ number_format(optional($kendaraan->tarif)->tarif_per_jam ?? 0, 0, ',', '.') }}
                             </td>
                             <td class="text-muted small">
                                 {{ \Carbon\Carbon::parse($kendaraan->created_at)->format('d M Y') }}
                             </td>
                             <td class="text-center pe-3">
                                 <div class="d-flex gap-1 justify-content-center">
-                                    {{-- Toggle Status --}}
-                                    <form action="{{ route('kendaraan.toggle-status', $kendaraan->id_kendaraan) }}" method="POST">
-                                        @csrf @method('PATCH')
-                                        <button type="submit"
-                                            class="btn btn-sm {{ $kendaraan->status === 'parkir' ? 'btn-outline-warning' : 'btn-outline-success' }}"
-                                            title="{{ $kendaraan->status === 'parkir' ? 'Set Keluar' : 'Set Parkir' }}">
-                                            <i class="bi {{ $kendaraan->status === 'parkir' ? 'bi-toggle-on' : 'bi-toggle-off' }}"></i>
-                                        </button>
-                                    </form>
 
                                     {{-- Edit --}}
                                     <button type="button" class="btn btn-sm btn-outline-primary" title="Edit"
@@ -163,82 +150,53 @@
 
 
 {{-- ===================== MODAL TAMBAH ===================== --}}
-<div class="modal fade" id="modalTambah" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalTambah">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form action="{{ route('kendaraan.store') }}" method="POST" autocomplete="off">
-                @csrf
-                <input type="hidden" name="_from_modal" value="tambah">
+        <form action="{{ route('kendaraan.store') }}" method="POST">
+            @csrf
+            <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">
-                        <i class="bi bi-car-front me-2 text-primary"></i>Tambah Kendaraan
+                        <i class="bi bi-plus-circle me-2 text-success"></i>Tambah Kendaraan
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Plat Nomor <span class="text-danger">*</span></label>
-                        <input type="text" name="plat_nomor"
-                            class="form-control @error('plat_nomor') is-invalid @enderror"
-                            value="{{ old('plat_nomor') }}" placeholder="Contoh: B 1234 ABC"
-                            style="text-transform:uppercase">
-                        @error('plat_nomor') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <input type="text" name="plat_nomor" class="form-control"
+                            placeholder="Contoh: B1234ABC" style="text-transform:uppercase" required>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Warna <span class="text-danger">*</span></label>
-                        <input type="text" name="warna"
-                            class="form-control @error('warna') is-invalid @enderror"
-                            value="{{ old('warna') }}" placeholder="Contoh: Merah">
-                        @error('warna') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <input type="text" name="warna" class="form-control" placeholder="Contoh: Merah" required>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Jenis Kendaraan <span class="text-danger">*</span></label>
-                        <select name="id_tarif" class="form-select @error('id_tarif') is-invalid @enderror">
-                            <option value="" disabled selected>-- Pilih Jenis --</option>
+                        <select name="id_tarif" class="form-select" required>
+                            <option value="">-- Pilih Tarif --</option>
                             @foreach($tarifs as $tarif)
-                                <option value="{{ $tarif->id_tarif }}"
-                                    {{ old('id_tarif') == $tarif->id_tarif ? 'selected' : '' }}>
-                                    {{ $tarif->jenis_kendaraan }}
-                                    (Rp {{ number_format($tarif->tarif_per_jam, 0, ',', '.') }}/jam)
+                                <option value="{{ $tarif->id_tarif }}">
+                                    {{ $tarif->jenis_kendaraan }} - Rp {{ number_format($tarif->tarif_per_jam, 0, ',', '.') }}
                                 </option>
                             @endforeach
                         </select>
-                        @error('id_tarif') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Pemilik</label>
-                        <select name="id_user" class="form-select @error('id_user') is-invalid @enderror">
-                            <option value="">-- Tanpa Pemilik --</option>
-                            @foreach($users as $user)
-                                <option value="{{ $user->id_user }}"
-                                    {{ old('id_user') == $user->id_user ? 'selected' : '' }}>
-                                    {{ $user->name }} ({{ $user->email }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('id_user') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
-                        <select name="status" class="form-select @error('status') is-invalid @enderror">
-                            <option value="" disabled selected>-- Pilih Status --</option>
-                            <option value="parkir" {{ old('status') === 'parkir' ? 'selected' : '' }}>Parkir</option>
-                            <option value="keluar" {{ old('status') === 'keluar' ? 'selected' : '' }}>Keluar</option>
-                        </select>
-                        @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i> Simpan
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save me-1"></i> Simpan
                     </button>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 </div>
-
 
 {{-- ===================== MODAL EDIT ===================== --}}
 <div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
@@ -271,24 +229,6 @@
                                     (Rp {{ number_format($tarif->tarif_per_jam, 0, ',', '.') }}/jam)
                                 </option>
                             @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Pemilik</label>
-                        <select name="id_user" id="edit_user" class="form-select">
-                            <option value="">-- Tanpa Pemilik --</option>
-                            @foreach($users as $user)
-                                <option value="{{ $user->id_user }}">
-                                    {{ $user->name }} ({{ $user->email }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
-                        <select name="status" id="edit_status" class="form-select" required>
-                            <option value="parkir">Parkir</option>
-                            <option value="keluar">Keluar</option>
                         </select>
                     </div>
                 </div>
@@ -339,9 +279,7 @@
         document.getElementById('formEdit').action = '/kendaraan/' + id;
         document.getElementById('edit_plat').value   = plat;
         document.getElementById('edit_warna').value  = warna;
-        document.getElementById('edit_status').value = status;
         document.getElementById('edit_tarif').value  = idTarif;
-        document.getElementById('edit_user').value   = idUser;
         new bootstrap.Modal(document.getElementById('modalEdit')).show();
     }
 

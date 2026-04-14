@@ -7,6 +7,7 @@ use App\Http\Controllers\KendaraanController;
 use App\Http\Controllers\TarifController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\LogAktivitasController;
+use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\DashboardController;
 
 /*
@@ -95,6 +96,17 @@ Route::middleware('auth')->group(function () {
             ->name('toggle-status');
     });
 
+
+    /*
+    |-----------------------------
+    | TRANSAKSI
+    |-----------------------------
+    */
+    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
+    Route::post('/transaksi', [TransaksiController::class, 'store'])->name('transaksi.store');
+    Route::patch('/transaksi/{id}/selesai', [TransaksiController::class, 'selesai'])->name('transaksi.selesai');
+    Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
+    Route::get('/transaksi/{id}/struk', [TransaksiController::class, 'struk'])->name('transaksi.struk');
     /*
     |-----------------------------
     | LOG
