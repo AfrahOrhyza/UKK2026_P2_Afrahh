@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 13, 2026 at 09:12 AM
+-- Generation Time: Apr 14, 2026 at 01:02 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -117,7 +117,14 @@ INSERT INTO `log_aktivitas` (`id_log`, `id_user`, `aktivitas`, `waktu_aktivitas`
 (30, NULL, 'Menambahkan user: afrah', '2026-04-13 08:00:09'),
 (31, NULL, 'Menambahkan user: mei', '2026-04-13 08:00:36'),
 (32, NULL, 'Menambahkan user: orr', '2026-04-13 08:01:45'),
-(33, NULL, 'Menambahkan user: orhy', '2026-04-13 08:47:14');
+(33, NULL, 'Menambahkan user: orhy', '2026-04-13 08:47:14'),
+(34, NULL, 'Menghapus user: petugas', '2026-04-14 00:41:16'),
+(35, NULL, 'Mengedit user: mei', '2026-04-14 00:41:24'),
+(36, NULL, 'Menambahkan user: vik', '2026-04-14 00:43:25'),
+(37, NULL, 'Mengedit user: mei', '2026-04-14 00:45:54'),
+(38, NULL, 'Mengedit user: mei', '2026-04-14 00:56:50'),
+(39, NULL, 'Mengedit user: orhy', '2026-04-14 00:57:59'),
+(40, NULL, 'Mengedit user: orhy', '2026-04-14 01:00:56');
 
 -- --------------------------------------------------------
 
@@ -197,6 +204,7 @@ CREATE TABLE `user` (
   `password` varchar(255) DEFAULT NULL,
   `role` enum('admin','petugas','owner') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `status` enum('aktif','nonaktif') DEFAULT NULL,
+  `shift` enum('pagi','siang','malam','') NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -205,14 +213,14 @@ CREATE TABLE `user` (
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`id_user`, `name`, `email`, `password`, `role`, `status`, `created_at`, `updated_at`) VALUES
-(13, 'admin', 'admin@ukk2026.com', '$2y$12$3N2t/VXftPW02l7pW0PBdejcN9gHA9c4obxXHxCrN5NWkE5ZHio/.', 'admin', 'aktif', '2026-04-10 03:52:25', '2026-04-12 21:54:19'),
-(19, 'petugas', 'petugas@ukk2026.com', '$2y$12$fyABytV5qxf3NSOIVruWL.BPY4kiKlF5Uqzp261Sy5KK4alE8i1rS', 'petugas', 'nonaktif', '2026-04-12 22:57:25', '2026-04-12 23:38:27'),
-(21, 'owner edit', 'owner@ukk2026.com', '$2y$12$A/IVQeSu0tNAEEi7D1Z7VenxLoZ3yHeckzus0ugRXjKn37ZdQEkTq', 'owner', 'aktif', '2026-04-12 23:32:22', '2026-04-12 23:33:06'),
-(29, 'afrah', 'afrahorhyza@gmail.com', '$2y$12$.VHhoIoHgP6RpIZlbwUU2ORj.ToUoZPG6fKCx/lZRtSy.q/hyHJQG', 'admin', 'aktif', '2026-04-13 01:00:09', '2026-04-13 01:00:09'),
-(30, 'mei', 'mei@gmail.com', '$2y$12$JKTvJrXhiQAcQFVAGmFpg.4N6Pb1ba49pmQzi3caFAav4RxC5Sx9K', 'petugas', 'aktif', '2026-04-13 01:00:36', '2026-04-13 01:00:36'),
-(31, 'orr', 'orr@gmail.com', '$2y$12$VfP39m483sxPmpQDjMUtU.M9enZR351XWQI86mPkkzUZX37WN9/iy', 'owner', 'aktif', '2026-04-13 01:01:45', '2026-04-13 01:01:45'),
-(32, 'orhy', 'orhy@gmail.com', '$2y$12$tVAs1lUn5duzYDTl4j7/eucEV3ovVDHG2zMc7EGlGSV/eytI2yA5G', 'petugas', 'aktif', '2026-04-13 01:47:14', '2026-04-13 01:47:14');
+INSERT INTO `user` (`id_user`, `name`, `email`, `password`, `role`, `status`, `shift`, `created_at`, `updated_at`) VALUES
+(13, 'admin', 'admin@ukk2026.com', '$2y$12$3N2t/VXftPW02l7pW0PBdejcN9gHA9c4obxXHxCrN5NWkE5ZHio/.', 'admin', 'aktif', 'pagi', '2026-04-10 03:52:25', '2026-04-12 21:54:19'),
+(21, 'owner edit', 'owner@ukk2026.com', '$2y$12$A/IVQeSu0tNAEEi7D1Z7VenxLoZ3yHeckzus0ugRXjKn37ZdQEkTq', 'owner', 'aktif', 'pagi', '2026-04-12 23:32:22', '2026-04-12 23:33:06'),
+(29, 'afrah', 'afrahorhyza@gmail.com', '$2y$12$.VHhoIoHgP6RpIZlbwUU2ORj.ToUoZPG6fKCx/lZRtSy.q/hyHJQG', 'admin', 'aktif', 'pagi', '2026-04-13 01:00:09', '2026-04-13 01:00:09'),
+(30, 'mei', 'mei@gmail.com', '$2y$12$JKTvJrXhiQAcQFVAGmFpg.4N6Pb1ba49pmQzi3caFAav4RxC5Sx9K', 'petugas', 'aktif', 'pagi', '2026-04-13 01:00:36', '2026-04-13 01:00:36'),
+(31, 'orr', 'orr@gmail.com', '$2y$12$VfP39m483sxPmpQDjMUtU.M9enZR351XWQI86mPkkzUZX37WN9/iy', 'owner', 'aktif', 'pagi', '2026-04-13 01:01:45', '2026-04-13 01:01:45'),
+(32, 'orhy', 'orhy@gmail.com', '$2y$12$tVAs1lUn5duzYDTl4j7/eucEV3ovVDHG2zMc7EGlGSV/eytI2yA5G', 'petugas', 'aktif', 'pagi', '2026-04-13 01:47:14', '2026-04-13 01:47:14'),
+(33, 'vik', 'viku@gmail.com', '$2y$12$oXynphoDNPCeNcPsxtobKeNvPuZ2uWBLuoc5HFQECBDHtMxc7Aciq', 'petugas', 'aktif', 'pagi', '2026-04-13 17:43:25', '2026-04-13 17:43:25');
 
 --
 -- Indexes for dumped tables
@@ -290,7 +298,7 @@ ALTER TABLE `kendaraan`
 -- AUTO_INCREMENT for table `log_aktivitas`
 --
 ALTER TABLE `log_aktivitas`
-  MODIFY `id_log` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id_log` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `riwayat`
@@ -314,7 +322,7 @@ ALTER TABLE `transaksi`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id_user` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id_user` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- Constraints for dumped tables
