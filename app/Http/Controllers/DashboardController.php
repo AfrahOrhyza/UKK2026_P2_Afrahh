@@ -57,18 +57,30 @@ class DashboardController extends Controller
         // ================= OWNER =================
         if ($role == 'owner') {
 
-            return view('owner.index', [
-                'totalUser'      => User::count(),
-                'totalKendaraan' => Kendaraan::count(),
-                'totalArea'      => AreaParkir::count(),
+        $today = now()->toDateString();
+        $bulanIni = now()->month;
 
-                // 🔥 OPTIONAL juga boleh pakai
-                'transaksiTerbaru' => Transaksi::with(['kendaraan', 'area'])
-                    ->latest('waktu_masuk')
-                    ->take(5)
-                    ->get(),
-            ]);
-        }
+        $pendapatanHariIni = Transaksi::whereDate('waktu_keluar', $today)
+                            ->where('status','Selesai')
+                            ->sum('biaya_total');
+
+        $transaksiHariIni = Transaksi::whereDate('waktu_keluar', $today)
+                            ->where('status','Selesai')
+                            ->count();
+
+        $sedangParkir = Transaksi::where('status','parkir')->count();
+
+        $pendapatanBulanIni = Transaksi::whereMonth('waktu_keluar', $bulanIni)
+                            ->where('status','Selesai')
+                            ->sum('biaya_total');
+
+        return view('owner.index', compact(
+            'pendapatanHariIni',
+            'transaksiHariIni',
+            'sedangParkir',
+            'pendapatanBulanIni'
+        ));
+    }
 
         abort(403);
     }

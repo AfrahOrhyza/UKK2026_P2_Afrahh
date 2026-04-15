@@ -143,6 +143,17 @@
 
 @endif
 
+      {{-- ================= OWNER MENU SAJA ================= --}}
+
+          @if($role === 'owner')
+      <li class="menu-item {{ request()->routeIs('riwayat.*') ? 'active' : '' }}">
+          <a href="{{ route('riwayat.index') }}" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-history"></i>
+              <div>Riwayat</div>
+          </a>
+      </li>
+      @endif
+
         </ul>
       </aside>
       {{-- ===== / SIDEBAR ===== --}}

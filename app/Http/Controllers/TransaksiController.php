@@ -90,46 +90,51 @@ public function selesai(Request $request, $id)
         'metode_pembayaran' => 'required'
     ]);
 
-    $transaksi = Transaksi::with(['kendaraan', 'tarif'])->findOrFail($id);
+    $transaksi = Transaksi::with(['tarif', 'kendaraan'])->findOrFail($id);
 
-    if ($transaksi->status === 'selesai') {
-        return redirect()->route('transaksi.index')
-            ->with('error', 'Transaksi sudah selesai.');
-    }
+    // waktu keluar
+    $transaksi->waktu_keluar = now();
 
-    $tarif       = $transaksi->tarif;
-    $waktuMasuk  = Carbon::parse($transaksi->waktu_masuk);
-    $waktuKeluar = Carbon::now();
+    // hitung durasi (menit)
+    $durasiMenit = Carbon::parse($transaksi->waktu_masuk)
+        ->diffInMinutes($transaksi->waktu_keluar);
 
-    $totalMenit = $waktuMasuk->diffInMinutes($waktuKeluar);
-    $totalJam   = ceil($totalMenit / 60);
-    if ($totalJam < 1) $totalJam = 1;
+    // konversi ke jam (dibulatkan ke atas)
+    $jam = ceil($durasiMenit / 60);
+    if ($jam < 1) $jam = 1;
 
-    $biayaTotal = $totalJam * abs($tarif->tarif_per_jam);
+    // tarif
+    $tarif = $transaksi->tarif->tarif_per_jam ?? 0;
 
-    $transaksi->update([
-        'waktu_keluar'      => $waktuKeluar,
-        'durasi_jam'        => intdiv($totalMenit, 60),
-        'durasi_menit'      => $totalMenit % 60,
-        'durasi'            => $totalMenit,
-        'biaya_total'       => $biayaTotal,
-        'metode_pembayaran' => $request->metode_pembayaran,
-        'status'            => 'selesai', // 🔥 INI PENTING
-    ]);
+    // total bayar
+    $total = $jam * $tarif;
 
-    // update kendaraan
+    // simpan
+    $transaksi->durasi = $durasiMenit;
+    $transaksi->biaya_total = $total;
+    $transaksi->status = 'selesai';
+
+    // pembayaran
+    $transaksi->status_pembayaran = 'lunas';
+    $transaksi->metode_pembayaran = $request->metode_pembayaran;
+
+    $transaksi->save();
+
+    // update kendaraan → keluar
     if ($transaksi->kendaraan) {
-        $transaksi->kendaraan->update(['status' => 'keluar']);
+        $transaksi->kendaraan->update([
+            'status' => 'keluar'
+        ]);
     }
 
-    // update area
+    // update area → kurangi isi
     $area = AreaParkir::find($transaksi->id_area);
     if ($area && $area->terisi > 0) {
         $area->decrement('terisi');
     }
 
-    // 🔥 redirect + auto buka struk
-    return redirect()->route('transaksi.struk', $id);
+    // redirect ke struk
+    return redirect()->route('transaksi.struk', $transaksi->id_transaksi);
 }
 
     public function destroy($id)

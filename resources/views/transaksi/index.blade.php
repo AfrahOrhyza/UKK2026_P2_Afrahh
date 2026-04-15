@@ -87,67 +87,79 @@
                         @forelse($transaksis as $index => $t)
                         <tr>
                             <td class="ps-3 text-muted">{{ $transaksis->firstItem() + $index }}</td>
+
                             <td class="fw-semibold">{{ $t->kendaraan->plat_nomor ?? '-' }}</td>
                             <td>{{ $t->kendaraan->warna ?? '-' }}</td>
                             <td>{{ $t->area->nama_area ?? '-' }}</td>
+
+                            {{-- WAKTU --}}
                             <td class="small">
                                 {{ $t->waktu_masuk ? \Carbon\Carbon::parse($t->waktu_masuk)->format('d M Y H:i') : '-' }}
                                 @if($t->waktu_keluar)
-                                    <br><small class="text-muted">
+                                    <br>
+                                    <small class="text-muted">
                                         Keluar: {{ \Carbon\Carbon::parse($t->waktu_keluar)->format('d M Y H:i') }}
                                     </small>
                                 @endif
                             </td>
-                            <td class="small">
-                                @if($t->status === 'selesai' && $t->durasi !== null && $t->durasi > 0)
-                                    {{ intdiv($t->durasi, 60) }}j {{ $t->durasi % 60 }}m
-                                @elseif($t->status === 'aktif')
-                                    {{-- Hitung durasi berjalan --}}
+
+                            {{-- DURASI --}}
+                            <td>
+                                @if($t->waktu_masuk)
                                     @php
-                                        $menitBerjalan = \Carbon\Carbon::parse($t->waktu_masuk)->diffInMinutes(now());
-                                        $jamB  = intdiv($menitBerjalan, 60);
-                                        $menitB = $menitBerjalan % 60;
+                                        $mulai = \Carbon\Carbon::parse($t->waktu_masuk);
+                                        $akhir = $t->waktu_keluar ? \Carbon\Carbon::parse($t->waktu_keluar) : now();
+
+                                        $durasiMenit = $mulai->diffInMinutes($akhir);
+                                        $jam = floor($durasiMenit / 60);
+                                        $menit = $durasiMenit % 60;
                                     @endphp
-                                    <span class="text-primary">{{ $jamB }}j {{ $menitB }}m</span>
-                                    <br><small class="text-muted">(berjalan)</small>
+
+                                    {{ $jam }} jam {{ $menit }} menit
                                 @else
                                     -
                                 @endif
                             </td>
+
+                            {{-- TOTAL --}}
                             <td>
-                                @if($t->status === 'selesai' && $t->biaya_total > 0)
+                                @if($t->status === 'selesai')
                                     <span class="fw-semibold text-success">
                                         Rp {{ number_format($t->biaya_total, 0, ',', '.') }}
                                     </span>
-                                @elseif($t->status === 'aktif')
-                                   @php
-                                    $menitBerjalan = \Carbon\Carbon::parse($t->waktu_masuk)->diffInMinutes(now());
-                                    $jamTagihan    = ceil($menitBerjalan / 60);
-                                    if ($jamTagihan < 1) $jamTagihan = 1;
+                                @else
+                                    @php
+                                        $menit = \Carbon\Carbon::parse($t->waktu_masuk)->diffInMinutes(now());
+                                        $jam = ceil($menit / 60);
+                                        if ($jam < 1) $jam = 1;
 
-                                    $tarif = abs($t->tarif->tarif_per_jam ?? 0); 
-                                    $estimasi = $jamTagihan * $tarif;
-                                   @endphp
+                                        $tarif = $t->tarif->tarif_per_jam ?? 0;
+                                        $estimasi = $jam * $tarif;
+                                    @endphp
+
                                     <span class="text-warning small">
-                                    Rp {{ number_format($estimasi, 0, ',', '.') }}
+                                        Rp {{ number_format($estimasi, 0, ',', '.') }}
                                     </span>
                                     <br><small class="text-muted">(estimasi)</small>
-                                @else
-                                    -
                                 @endif
                             </td>
+
+                            {{-- STATUS --}}
                             <td>
-                                <span class="badge px-2 py-1 {{ $t->status === 'aktif' ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ ucfirst($t->status) }}
-                                </span>
+                                @if($t->status === 'aktif')
+                                    <span class="badge bg-success">Aktif</span>
+                                @else
+                                    <span class="badge bg-secondary">Keluar</span>
+                                @endif
                             </td>
+
+                            {{-- AKSI --}}
                             <td class="text-center pe-3">
                                 <div class="d-flex gap-1 justify-content-center">
+
                                     @if($t->status === 'aktif')
-                                        {{-- Proses Keluar --}}
                                         <button type="button"
                                             class="btn btn-sm btn-outline-warning"
-                                            title="Proses Keluar"
                                             onclick="bukaModalSelesai(
                                                 {{ $t->id_transaksi }},
                                                 '{{ $t->kendaraan->plat_nomor ?? '-' }}',
@@ -156,17 +168,15 @@
                                             <i class="bi bi-box-arrow-right"></i>
                                         </button>
                                     @else
-                                        {{-- Cetak Struk --}}
                                         <a href="{{ route('transaksi.struk', $t->id_transaksi) }}"
                                             target="_blank"
-                                            class="btn btn-sm btn-outline-info"
-                                            title="Cetak Struk">
+                                            class="btn btn-sm btn-outline-info">
                                             <i class="bi bi-printer"></i>
                                         </a>
                                     @endif
 
-                                    {{-- Hapus --}}
-                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Hapus"
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-danger"
                                         onclick="bukaModalHapus({{ $t->id_transaksi }}, '{{ $t->kendaraan->plat_nomor ?? '-' }}')">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -176,12 +186,11 @@
                         @empty
                         <tr>
                             <td colspan="9" class="text-center py-5 text-muted">
-                                <i class="bi bi-receipt fs-1 d-block mb-2 opacity-25"></i>
                                 Tidak ada data transaksi.
                             </td>
                         </tr>
                         @endforelse
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
@@ -335,7 +344,22 @@
     </div>
 </div>
 
-@push('scripts')
+<!-- MODAL STRUK -->
+<div class="modal fade" id="modalStruk" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3" id="strukContent">
+            <div class="text-center">
+                <h6>STRUK PARKIR</h6>
+                <hr>
+
+                <div id="isiStruk"></div>
+
+                <button class="btn btn-sm btn-primary mt-3" onclick="printStruk()">Cetak</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function bukaModalSelesai(id, plat, waktu) {
         document.getElementById('formSelesai').action = '/transaksi/' + id + '/selesai';
@@ -353,6 +377,34 @@
         var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
         modal.show();
     }
+    
+    function bukaModalSelesai(id, plat, waktu) {
+    document.getElementById('formSelesai').action = '/transaksi/' + id + '/selesai';
+    document.getElementById('selesaiPlat').textContent  = plat;
+    document.getElementById('selesaiWaktu').textContent = waktu;
+    var modalEl = document.getElementById('modalSelesai');
+    var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    modal.show();
+}
+</script>
+@push('scripts')
+<script>
+function bukaModalSelesai(id, plat, waktu) {
+    document.getElementById('formSelesai').action = '/transaksi/' + id + '/selesai';
+    document.getElementById('selesaiPlat').textContent  = plat;
+    document.getElementById('selesaiWaktu').textContent = waktu;
+
+    let modal = new bootstrap.Modal(document.getElementById('modalSelesai'));
+    modal.show();
+}
+
+function bukaModalHapus(id, plat) {
+    document.getElementById('formHapus').action = '/transaksi/' + id;
+    document.getElementById('hapusPlat').textContent = plat;
+
+    let modal = new bootstrap.Modal(document.getElementById('modalHapus'));
+    modal.show();
+}
 </script>
 @endpush
 @endsection

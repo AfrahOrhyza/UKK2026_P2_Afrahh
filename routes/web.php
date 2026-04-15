@@ -8,6 +8,7 @@ use App\Http\Controllers\TarifController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\LogAktivitasController;
 use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\DashboardController;
 
 /*
@@ -107,6 +108,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('/transaksi/{id}/selesai', [TransaksiController::class, 'selesai'])->name('transaksi.selesai');
     Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
     Route::get('/transaksi/{id}/struk', [TransaksiController::class, 'struk'])->name('transaksi.struk');
+
+    /*
+    |-----------------------------
+    | RIWAYAT
+    |-----------------------------
+    */
+    Route::get('/riwayat', [RiwayatController::class, 'index'])
+    ->name('riwayat.index');
     /*
     |-----------------------------
     | LOG

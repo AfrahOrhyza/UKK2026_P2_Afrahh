@@ -117,55 +117,6 @@
         </div>
 
     </div>
-
-    {{-- Transaksi Terbaru --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white fw-semibold border-bottom">
-            <i class="bi bi-clock-history me-2 text-primary"></i>Transaksi Terbaru
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3">#</th>
-                            <th>Plat</th>
-                            <th>Jenis</th>
-                            <th>Area</th>
-                            <th>Waktu Masuk</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($transaksiTerbaru as $i => $t)
-                        <tr>
-                            <td class="ps-3 text-muted">{{ $i + 1 }}</td>
-                            <td class="fw-semibold">{{ $t->kendaraan->plat_nomor ?? '-' }}</td>
-                            <td>{{ $t->kendaraan->tarif->jenis_kendaraan ?? '-' }}</td>
-                            <td>{{ $t->area->nama_area ?? '-' }}</td>
-                            <td class="text-muted small">
-                                {{ $t->waktu_masuk ? \Carbon\Carbon::parse($t->waktu_masuk)->format('d M Y H:i') : '-' }}
-                            </td>
-                            <td>
-                                <span class="badge {{ $t->status === 'aktif' ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ ucfirst($t->status) }}
-                                </span>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">
-                                <i class="bi bi-inbox fs-3 d-block mb-2 opacity-25"></i>
-                                Belum ada transaksi.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 @endsection

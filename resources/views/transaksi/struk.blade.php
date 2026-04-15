@@ -222,6 +222,18 @@
         &#128438; Cetak Struk
     </button>
 </div>
+<script>
+    window.print();
 
+    // setelah print ditutup → kembali ke halaman transaksi
+    window.onafterprint = function() {
+        window.location.href = "{{ route('transaksi.index') }}";
+    };
+
+    // fallback kalau onafterprint tidak jalan
+    setTimeout(() => {
+        window.location.href = "{{ route('transaksi.index') }}";
+    }, 3000);
+</script>
 </body>
 </html>

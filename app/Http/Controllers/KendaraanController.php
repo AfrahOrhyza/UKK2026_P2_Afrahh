@@ -25,31 +25,34 @@ class KendaraanController extends Controller
             $query->where('status', $request->status);
         }
 
-        $kendaraans = $query->orderByDesc('created_at')->paginate(10)->withQueryString();
-        $tarifs     = Tarif::all();
-        $users      = User::where('status', 'aktif')->orderBy('name')->get();
+        $kendaraans = $query->paginate(10);
+
+        $tarifs = Tarif::all();
+        $users  = User::where('status', 'aktif')->orderBy('name')->get();
 
         return view('kendaraan.index', compact('kendaraans', 'tarifs', 'users'));
     }
 
-public function store(Request $request)
-{
-    $request->validate([
-        'plat_nomor' => 'required|string|max:20|unique:kendaraan,plat_nomor',
-        'warna'      => 'required|string|max:50',
-        'id_tarif'   => 'required|exists:tarif,id_tarif',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'plat_nomor' => 'required|string|max:20|unique:kendaraan,plat_nomor',
+            'warna'      => 'required|string|max:50',
+            'id_tarif'   => 'required|exists:tarif,id_tarif',
+        ]);
 
-    Kendaraan::create([
-        'plat_nomor' => strtoupper($request->plat_nomor),
-        'warna'      => $request->warna,
-        'status'     => 'parkir',
-        'id_tarif'   => $request->id_tarif,
-        'id_user'    => null,
-    ]);
+        Kendaraan::create([
+            'plat_nomor' => strtoupper($request->plat_nomor),
+            'warna'      => $request->warna,
+            'status'     => 'keluar',
+            'id_tarif'   => $request->id_tarif,
+            'id_user'    => auth()->id(), // ✅ FIX
+        ]);
 
-    return redirect()->route('kendaraan.index')->with('success', 'Kendaraan berhasil ditambahkan.');
-}
+        return redirect()->route('kendaraan.index')
+            ->with('success', 'Kendaraan berhasil ditambahkan.');
+    }
+
     public function update(Request $request, $id)
     {
         $kendaraan = Kendaraan::findOrFail($id);
@@ -57,9 +60,9 @@ public function store(Request $request)
         $request->validate([
             'plat_nomor' => 'required|string|max:20|unique:kendaraan,plat_nomor,' . $id . ',id_kendaraan',
             'warna'      => 'required|string|max:50',
-            'status'     => 'required|in:parkir,keluar',
+            'status'     => 'required|in:parkir,keluar,nonaktif',
             'id_tarif'   => 'required|exists:tarif,id_tarif',
-            'id_user'    => 'nullable|exists:user,id_user',
+            'id_user'    => 'nullable|exists:users,id', // ✅ FIX
         ]);
 
         $kendaraan->update([
@@ -67,27 +70,34 @@ public function store(Request $request)
             'warna'      => $request->warna,
             'status'     => $request->status,
             'id_tarif'   => $request->id_tarif,
-            'id_user'    => $request->id_user ?: null,
+            'id_user'    => $request->id_user,
         ]);
 
-        return redirect()->route('kendaraan.index')->with('success', 'Kendaraan berhasil diupdate.');
+        return redirect()->route('kendaraan.index')
+            ->with('success', 'Kendaraan berhasil diupdate.');
     }
 
     public function destroy($id)
     {
-        $kendaraan = Kendaraan::findOrFail($id);
-        $kendaraan->delete();
+    $kendaraan = Kendaraan::findOrFail($id);
 
-        return redirect()->route('kendaraan.index')->with('success', 'Kendaraan berhasil dihapus.');
+    // hapus semua transaksi terkait
+    $kendaraan->transaksis()->delete();
+
+    $kendaraan->delete();
+
+    return redirect()->route('kendaraan.index')
+        ->with('success', 'Data berhasil dihapus');
     }
 
     public function toggleStatus($id)
     {
         $kendaraan = Kendaraan::findOrFail($id);
+
         $kendaraan->status = $kendaraan->status === 'parkir' ? 'keluar' : 'parkir';
         $kendaraan->save();
 
-        return redirect()->route('kendaraan.index')->with('success', 'Status kendaraan berhasil diubah.');
+        return redirect()->route('kendaraan.index')
+            ->with('success', 'Status kendaraan berhasil diubah.');
     }
-    
 }
