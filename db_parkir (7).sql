@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 14, 2026 at 01:02 AM
+-- Generation Time: Apr 14, 2026 at 08:02 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -40,7 +40,8 @@ CREATE TABLE `area_parkir` (
 
 INSERT INTO `area_parkir` (`id_area`, `nama_area`, `kapasitas`, `terisi`) VALUES
 (3, 'Area A', 3, 0),
-(4, 'Area B', 2, 0);
+(4, 'Area B', 2, 0),
+(5, 'Area C', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -63,9 +64,10 @@ CREATE TABLE `kendaraan` (
 --
 
 INSERT INTO `kendaraan` (`id_kendaraan`, `plat_nomor`, `warna`, `status`, `id_tarif`, `id_user`, `created_at`) VALUES
-(5, 'D 0411 OR EDIT', 'Putih', 'parkir', 6, 13, '2026-04-13 04:09:18'),
 (6, 'B 63637 VD', 'Ungu', 'parkir', 6, 13, '2026-04-13 06:47:04'),
-(7, 'Z 66363 FH', 'Biru', 'parkir', 7, 21, '2026-04-13 07:59:37');
+(7, 'Z 66363 FH', 'Biru', 'keluar', 7, 21, '2026-04-13 07:59:37'),
+(8, 'Y 54665 JH', 'Biru', 'parkir', 8, 33, '2026-04-14 01:33:49'),
+(10, 'B 67346 YY', 'Merah', 'keluar', 8, NULL, '2026-04-14 05:44:06');
 
 -- --------------------------------------------------------
 
@@ -124,7 +126,22 @@ INSERT INTO `log_aktivitas` (`id_log`, `id_user`, `aktivitas`, `waktu_aktivitas`
 (37, NULL, 'Mengedit user: mei', '2026-04-14 00:45:54'),
 (38, NULL, 'Mengedit user: mei', '2026-04-14 00:56:50'),
 (39, NULL, 'Mengedit user: orhy', '2026-04-14 00:57:59'),
-(40, NULL, 'Mengedit user: orhy', '2026-04-14 01:00:56');
+(40, NULL, 'Mengedit user: orhy', '2026-04-14 01:00:56'),
+(41, NULL, 'Mengedit user: mei', '2026-04-14 01:05:43'),
+(42, NULL, 'Mengedit user: mei', '2026-04-14 01:09:04'),
+(43, NULL, 'Mengedit user: orhy', '2026-04-14 01:10:49'),
+(44, NULL, 'Mengedit user: orhy', '2026-04-14 01:11:22'),
+(45, NULL, 'Mengedit user: orhy', '2026-04-14 01:17:54'),
+(46, NULL, 'Mengedit user: vik', '2026-04-14 01:26:44'),
+(47, NULL, 'Menambahkan user: na', '2026-04-14 01:31:24'),
+(48, NULL, 'Mengedit user: mei', '2026-04-14 01:31:31'),
+(49, NULL, 'Mengedit user: owner edit', '2026-04-14 01:31:42'),
+(50, NULL, 'Menambahkan user: ena', '2026-04-14 01:32:36'),
+(51, NULL, 'Mengedit user: mei', '2026-04-14 01:41:53'),
+(52, NULL, 'Menghapus user: mei', '2026-04-14 02:41:37'),
+(53, NULL, 'Menambahkan user: petugas', '2026-04-14 02:42:49'),
+(54, NULL, 'Mengedit user: vik', '2026-04-14 02:42:59'),
+(55, NULL, 'Mengedit user: afrah', '2026-04-14 02:43:16');
 
 -- --------------------------------------------------------
 
@@ -168,7 +185,8 @@ CREATE TABLE `tarif` (
 
 INSERT INTO `tarif` (`id_tarif`, `jenis_kendaraan`, `tarif_per_jam`) VALUES
 (6, 'Motor', 3000.00),
-(7, 'Mobil', 5000.00);
+(7, 'Mobil', 5000.00),
+(8, 'Bis', 10000.00);
 
 -- --------------------------------------------------------
 
@@ -191,6 +209,20 @@ CREATE TABLE `transaksi` (
   `id_area` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `transaksi`
+--
+
+INSERT INTO `transaksi` (`id_transaksi`, `id_kendaraan`, `id_tarif`, `waktu_masuk`, `waktu_keluar`, `durasi_jam`, `durasi_menit`, `durasi`, `biaya_total`, `status`, `id_user`, `id_area`) VALUES
+(1, 10, 7, '2026-04-14 06:27:01', '2026-04-14 06:49:04', 0, 22, 22, 5000.00, 'selesai', 36, 3),
+(2, 7, 7, '2026-04-14 07:06:59', '2026-04-14 07:09:38', 0, 2, 3, 5000.00, 'selesai', 36, 3),
+(3, 10, 8, '2026-04-14 07:10:49', '2026-04-14 07:39:43', 0, 28, 29, 10000.00, 'selesai', 36, 3),
+(4, 7, 7, '2026-04-14 07:28:45', '2026-04-14 07:30:48', 0, 2, 2, 5000.00, 'selesai', 36, 4),
+(5, 10, 8, '2026-04-14 07:47:37', '2026-04-14 07:47:54', 0, 0, 0, 10000.00, 'selesai', 36, 4),
+(6, 7, 7, '2026-04-14 07:51:39', '2026-04-14 07:54:35', 0, 2, 3, 5000.00, 'selesai', 36, 5),
+(7, 10, 8, '2026-04-14 07:57:25', '2026-04-14 07:57:31', 0, 0, 0, 10000.00, 'selesai', 36, 4),
+(8, 7, 7, '2026-04-14 07:58:00', '2026-04-14 07:58:08', 0, 0, 0, 5000.00, 'selesai', 36, 4);
+
 -- --------------------------------------------------------
 
 --
@@ -204,7 +236,7 @@ CREATE TABLE `user` (
   `password` varchar(255) DEFAULT NULL,
   `role` enum('admin','petugas','owner') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `status` enum('aktif','nonaktif') DEFAULT NULL,
-  `shift` enum('pagi','siang','malam','') NOT NULL,
+  `shift` varchar(20) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -215,12 +247,13 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`id_user`, `name`, `email`, `password`, `role`, `status`, `shift`, `created_at`, `updated_at`) VALUES
 (13, 'admin', 'admin@ukk2026.com', '$2y$12$3N2t/VXftPW02l7pW0PBdejcN9gHA9c4obxXHxCrN5NWkE5ZHio/.', 'admin', 'aktif', 'pagi', '2026-04-10 03:52:25', '2026-04-12 21:54:19'),
-(21, 'owner edit', 'owner@ukk2026.com', '$2y$12$A/IVQeSu0tNAEEi7D1Z7VenxLoZ3yHeckzus0ugRXjKn37ZdQEkTq', 'owner', 'aktif', 'pagi', '2026-04-12 23:32:22', '2026-04-12 23:33:06'),
-(29, 'afrah', 'afrahorhyza@gmail.com', '$2y$12$.VHhoIoHgP6RpIZlbwUU2ORj.ToUoZPG6fKCx/lZRtSy.q/hyHJQG', 'admin', 'aktif', 'pagi', '2026-04-13 01:00:09', '2026-04-13 01:00:09'),
-(30, 'mei', 'mei@gmail.com', '$2y$12$JKTvJrXhiQAcQFVAGmFpg.4N6Pb1ba49pmQzi3caFAav4RxC5Sx9K', 'petugas', 'aktif', 'pagi', '2026-04-13 01:00:36', '2026-04-13 01:00:36'),
+(21, 'owner', 'owner@ukk2026.com', '$2y$12$A/IVQeSu0tNAEEi7D1Z7VenxLoZ3yHeckzus0ugRXjKn37ZdQEkTq', 'owner', 'aktif', NULL, '2026-04-12 23:32:22', '2026-04-13 18:31:42'),
+(29, 'afrah edit', 'afrahorhyza@gmail.com', '$2y$12$.VHhoIoHgP6RpIZlbwUU2ORj.ToUoZPG6fKCx/lZRtSy.q/hyHJQG', 'admin', 'aktif', NULL, '2026-04-13 01:00:09', '2026-04-13 19:43:16'),
 (31, 'orr', 'orr@gmail.com', '$2y$12$VfP39m483sxPmpQDjMUtU.M9enZR351XWQI86mPkkzUZX37WN9/iy', 'owner', 'aktif', 'pagi', '2026-04-13 01:01:45', '2026-04-13 01:01:45'),
-(32, 'orhy', 'orhy@gmail.com', '$2y$12$tVAs1lUn5duzYDTl4j7/eucEV3ovVDHG2zMc7EGlGSV/eytI2yA5G', 'petugas', 'aktif', 'pagi', '2026-04-13 01:47:14', '2026-04-13 01:47:14'),
-(33, 'vik', 'viku@gmail.com', '$2y$12$oXynphoDNPCeNcPsxtobKeNvPuZ2uWBLuoc5HFQECBDHtMxc7Aciq', 'petugas', 'aktif', 'pagi', '2026-04-13 17:43:25', '2026-04-13 17:43:25');
+(32, 'orhy', 'orhy@gmail.com', '$2y$12$tVAs1lUn5duzYDTl4j7/eucEV3ovVDHG2zMc7EGlGSV/eytI2yA5G', 'petugas', 'aktif', 'siang', '2026-04-13 01:47:14', '2026-04-13 18:17:54'),
+(33, 'vik', 'viku@gmail.com', '$2y$12$oXynphoDNPCeNcPsxtobKeNvPuZ2uWBLuoc5HFQECBDHtMxc7Aciq', 'petugas', 'aktif', 'pagi', '2026-04-13 17:43:25', '2026-04-13 19:42:59'),
+(35, 'ena', 'na@gmail.com', '$2y$12$qlB3TFUw6GLr4gw4LkdifO5h6BcoWcsNMEPNVJBevrUGFmj2c0UuW', 'owner', 'aktif', NULL, '2026-04-13 18:32:36', '2026-04-13 18:32:36'),
+(36, 'petugas', 'petugas@ukk2026.com', '$2y$12$wYO6SZ2yQLIgTM5noX/NXeswXMtZQqOus4QGcbNPOUMxl016F5.ZC', 'petugas', 'aktif', 'pagi', '2026-04-13 19:42:49', '2026-04-13 19:42:49');
 
 --
 -- Indexes for dumped tables
@@ -286,19 +319,19 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `area_parkir`
 --
 ALTER TABLE `area_parkir`
-  MODIFY `id_area` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_area` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `kendaraan`
 --
 ALTER TABLE `kendaraan`
-  MODIFY `id_kendaraan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_kendaraan` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `log_aktivitas`
 --
 ALTER TABLE `log_aktivitas`
-  MODIFY `id_log` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id_log` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `riwayat`
@@ -310,19 +343,19 @@ ALTER TABLE `riwayat`
 -- AUTO_INCREMENT for table `tarif`
 --
 ALTER TABLE `tarif`
-  MODIFY `id_tarif` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_tarif` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `transaksi`
 --
 ALTER TABLE `transaksi`
-  MODIFY `id_transaksi` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id_transaksi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id_user` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id_user` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- Constraints for dumped tables
